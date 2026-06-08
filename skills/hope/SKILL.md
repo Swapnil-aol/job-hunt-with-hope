@@ -17,6 +17,7 @@ Otherwise, infer the active milestone from graph state:
 
 - No JobPosting nodes → suggest `hope-discovery`
 - JobPostings exist, no CuratedPortfolios → suggest `hope-portfolio`
+- A CuratedPortfolio exists but isn't published (no live URL / no `~/Hope/.publish.json`) → suggest `hope-publish`
 - CuratedPortfolios exist, no Applications → suggest `hope-application`
 - Applications exist with `status: interviewing` → suggest `hope-interview`
 - Offers exist with `decision: pending` → suggest `hope-negotiation`

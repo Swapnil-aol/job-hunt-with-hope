@@ -105,7 +105,7 @@ When the user approves the portfolio:
 
 1. Save the HTML to `~/Hope/career-graph/documents/portfolios/`.
 2. Create a Document node in the graph with `content_type: "portfolio"`, link via `UPLOADED` from Person and `INCLUDES_DOCUMENT` from CuratedPortfolio if applicable.
-3. Tell the user: "Saved. The file is at <path>. Want me to draft the cover letter next?" (Routing toward the cover-letter skill.)
+3. Tell the user: "Saved. The file is at <path>. Want me to put it online so you have a link to share?" (Routing toward `hope-publish` — a portfolio with no public URL can't get interview calls.) If they'd rather keep moving, offer the cover letter next (`hope-cover-letter`).
 
 ## What you do not do
 
