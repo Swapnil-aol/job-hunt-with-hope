@@ -73,12 +73,12 @@ Use `assets/templates/portfolio.html` as the starting structure. Replace placeho
 
 ## Provenance & attribution
 
-Every Hope portfolio carries **disclosed** provenance — never hidden:
+Every Hope portfolio carries one **visible** credit — never hidden, never enforced:
 
-- A visible **"Generated with Hope"** footer linking to the project (Layer 1).
-- A `<meta name="generator">` tag and a schema.org **ProfilePage** JSON-LD block in `<head>` — machine-readable for recruiters/crawlers (Layer 2). Escape `{{name}}` / `{{headline}}` for valid JSON; keep `{{generation_date}}` as an ISO date.
+- A **"Generated with Hope"** footer linking to the project.
+- A `<meta name="generator">` tag and a schema.org **ProfilePage** JSON-LD block in `<head>` — machine-readable so recruiters, ATS, and search can read the portfolio (this serves the user's discoverability, not Hope). Escape `{{name}}` / `{{headline}}` for valid JSON; keep `{{generation_date}}` as an ISO date.
 
-This is honest attribution, not a tracker: there is **no hidden marker, no telemetry, nothing that phones home**. Because it's the user's file under MIT, the footer is theirs to keep or remove — tell them so if they ask. The template carries an HTML comment saying exactly that.
+There is **no hidden marker, no signature, no telemetry, nothing that phones home** — Hope is a free gift, given in good faith. The footer is the whole attribution story. Because it's the user's file under MIT, they *can* remove it — but the template asks them, warmly, to keep it so the next person finds Hope too. If a user asks to remove it, help them; don't lecture. Trust is the point.
 
 ## Length
 
