@@ -145,7 +145,7 @@ img { display: block; }
   .chevron { display: none !important; }
   /* Never split a card/section across a page. */
   .identity-card, .item-card, .skill-cat, .skill-cell, .edu-card,
-  .proj-tile, .contrib, .contrib-group, .section-pane {
+  .contrib, .contrib-group, .section-pane {
     break-inside: avoid; page-break-inside: avoid;
   }
   .footer { break-before: avoid; page-break-before: avoid; }
@@ -155,11 +155,12 @@ img { display: block; }
 .identity-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; z-index: 0; }
 .identity-card > * { position: relative; z-index: 1; }
 .identity-row { display: flex; align-items: flex-start; gap: 18px; }
-.photo-upload { position: relative; width: 64px; height: 64px; border-radius: var(--radius-button); background: var(--surface-2); border: 1.5px dashed var(--border-hover); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; overflow: hidden; transition: all 0.2s; color: var(--text-muted); font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.10em; text-transform: uppercase; }
+.photo-upload { position: relative; width: 104px; height: 104px; border-radius: var(--radius-button); background: var(--surface-2); border: 1.5px dashed var(--border-hover); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; overflow: hidden; transition: all 0.2s; color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase; }
 .photo-upload:hover { border-color: var(--accent-orange); color: var(--accent-orange); background: var(--accent-orange-bg); }
-.photo-upload .material-symbols-rounded { font-size: 20px; margin-bottom: 1px; }
+.photo-upload .material-symbols-rounded { font-size: 26px; margin-bottom: 2px; }
 .photo-upload.has-photo { border-style: solid; border-color: var(--accent-emerald); padding: 0; background: transparent; }
 .photo-upload.has-photo .upload-prompt { display: none; }
+/* The baked headshot is ~480px source → object-fit:cover downscale stays crisp at 104px (and on hi-DPI). */
 .photo-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
 .photo-upload.has-photo img { display: block; }
 .photo-upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
@@ -286,6 +287,12 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 .skill-chip[data-cat="tools"] { background: rgba(56,189,248,0.10); color: #0369A1; border-color: rgba(56,189,248,0.30); }
 .contrib-competencies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .competency { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); border-bottom: 1px solid var(--text-dim); padding: 0 1px 1px; }
+/* Optional project link (repo / live site / writeup) in a project card body. */
+.project-link-row { margin-top: 8px; }
+.project-link { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11.5px; color: var(--accent-cyan); text-decoration: none; transition: opacity 0.2s; }
+.project-link:hover { opacity: 0.8; }
+.project-link .material-symbols-rounded { font-size: 13px; }
+.project-link .ext { font-size: 10px; color: var(--text-dim); opacity: 0.55; }
 
 .skills-hud { display: flex; flex-direction: column; gap: 16px; }
 .skill-cat { display: flex; flex-direction: column; gap: 8px; }
@@ -310,15 +317,6 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 .edu-card .date-line { margin-top: 2px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.04em; }
 .no-date { font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.10em; color: var(--accent-amber); background: var(--accent-amber-bg); border: 1px solid var(--accent-amber-edge); border-radius: var(--radius-tight); padding: 2px 6px; }
 
-.proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.proj-tile { background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 1 / 1; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; box-shadow: var(--shadow-sm); }
-.proj-tile:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); border-color: var(--accent-orange); }
-.proj-tile .hero { flex: 1; min-height: 0; display: flex; align-items: flex-end; padding: 0 10px 10px; position: relative; }
-.proj-tile .metric-tag { font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); border-radius: var(--radius-tight); padding: 3px 7px; letter-spacing: 0.04em; text-transform: uppercase; }
-.proj-tile .info { padding: 8px 10px 10px; flex-shrink: 0; }
-.proj-tile .name { font-size: 12px; font-weight: 700; color: var(--text-primary); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.005em; }
-.proj-tile .techs { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-dim); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; }
-
 .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border-default); color: var(--text-dim); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; text-align: center; }
 .footer a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid var(--border-default); transition: color 0.2s, border-color 0.2s; }
 .footer a:hover { color: var(--accent-orange); border-color: var(--accent-orange); }
@@ -326,11 +324,13 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 @media (max-width: 640px) {
   .wrap { padding: 16px 14px 60px; }
   .identity-card { padding: 18px 18px; }
-  .identity-row { flex-direction: column; gap: 14px; }
+  /* Stack the (now larger) headshot above the identity info on narrow screens;
+     left-align so the photo and name share an edge. */
+  .identity-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .photo-upload { width: 96px; height: 96px; }
   .identity-top { flex-direction: column; align-items: flex-start; gap: 8px; }
   h1.name { font-size: 20px; }
   .section-grid { grid-template-columns: 1fr; }
-  .proj-grid { grid-template-columns: repeat(2, 1fr); }
   .item-meta { flex-wrap: wrap; gap: 6px; }
 }
 </style>
@@ -634,27 +634,79 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
     </div>
   </div>
 
-  <!-- PROJECTS PANE — Instagram-style 3-col grid =================== -->
+  <!-- PROJECTS PANE — expandable Experience-style cards ============= -->
+  <!-- Projects render with the SAME collapsible .item-card structure as the
+       Experience pane, so a project's full story (description, impact, the
+       skills it applied) is shown rather than thrown away. The card-expand JS
+       (.item-card[data-expand] .item-head click → .expanded) and the section-grid
+       filter both work here unchanged because the classes are identical. -->
   <div class="section-pane" data-pane="projects">
-    <div class="proj-grid">
-      <!-- HOPE:projects_loop_start
-           Hero gradient is deterministic from technology array:
-             hue1 = (sum(t.charCodeAt(0)*7 for t in techs) + 200) % 360
-             hue2 = (hue1 + 40) % 360
-             background: linear-gradient(135deg, hsl(${hue1}, 50%, 28%) 0%, hsl(${hue2}, 60%, 22%) 100%)
-           best_metric: pull metric.value from contributions or regex-match impact for a number.
-      -->
-      <div class="proj-tile">
-        <div class="hero" style="background: {{project_gradient}};">
-          {{#best_metric}}<span class="metric-tag">{{best_metric}}</span>{{/best_metric}}
+    <!-- HOPE:projects_loop_start
+         For each Project (sort: is_current/active first, then start_date desc), render:
+         - Add "expanded" class on the FIRST card by default (so the pane opens populated)
+         - org-logo: if the project has a link/host domain, use the favicon
+               <img class="org-logo" src="https://www.google.com/s2/favicons?domain={{project_domain}}&sz=128"
+                    onerror="this.outerHTML='<span class=\"org-fallback\">{{project_initial}}</span>';">
+           otherwise just render the lettermark: <span class="org-fallback">{{project_initial}}</span>
+         - role-title  = project name
+         - role-company = tagline (or tech summary if no tagline)
+         - role-dates  = project_dates (omit the <span> entirely if the project carries no dates)
+         - {{#is_active}}…{{/is_active}} active pill for in-progress / ongoing projects
+         - hex KPIs (optional): reuse person/groups/monitoring counts where the project has them;
+           omit any hex-kpi whose count is absent.
+         - Body: one .contrib block carrying the description, the impact line, and the
+           skills_applied chips. skill_category drives the chip color (same map as Experience).
+    -->
+    <div class="item-card project expanded" data-expand>
+      <span class="accent-bar"></span>
+      <div class="item-head">
+        <img class="org-logo" src="https://www.google.com/s2/favicons?domain={{project_domain}}&sz=128"
+             alt="{{project_name}}" width="44" height="44"
+             onerror="this.outerHTML='&lt;span class=\'org-fallback\'&gt;{{project_initial}}&lt;/span&gt;';">
+        <div class="item-info">
+          <div class="title-row">
+            <span class="role-title">{{project_name}}</span>
+            {{#is_active}}<span class="active-pill">Active</span>{{/is_active}}
+          </div>
+          <span class="role-company">{{project_tagline}}</span>
+          {{#project_dates}}<span class="role-dates">{{project_dates}}</span>{{/project_dates}}
         </div>
-        <div class="info">
-          <div class="name">{{project_name}}</div>
-          <div class="techs">{{tech_summary}}</div>
+        <div class="item-meta">
+          {{#best_metric}}<span class="contrib-pill">{{best_metric}}</span>{{/best_metric}}
+          <span class="chevron"><span class="material-symbols-rounded">expand_more</span></span>
         </div>
       </div>
-      <!-- HOPE:projects_loop_end -->
+      <div class="item-body">
+        <div class="item-body-inner">
+          <div class="item-divider"></div>
+          <article class="contrib ic" style="background: transparent; border: 0; border-left: 0; padding: 0;">
+            <p class="contrib-action">{{project_description}}</p>
+            {{#impact}}
+            <div class="contrib-impact">
+              <span class="material-symbols-rounded">arrow_forward</span>
+              <p>{{impact}}</p>
+            </div>
+            {{/impact}}
+            {{#has_skills}}
+            <div class="contrib-skills">
+              <!-- HOPE:project_skills_loop -->
+              <span class="skill-chip" data-cat="{{skill_category}}">{{skill_name}}</span>
+              <!-- /HOPE:project_skills_loop -->
+            </div>
+            {{/has_skills}}
+            {{#link}}
+            <div class="project-link-row">
+              <a class="project-link" href="{{link}}" target="_blank" rel="noopener">
+                <span class="material-symbols-rounded">link</span>{{link_label}}
+                <span class="material-symbols-rounded ext">open_in_new</span>
+              </a>
+            </div>
+            {{/link}}
+          </article>
+        </div>
+      </div>
     </div>
+    <!-- HOPE:projects_loop_end -->
   </div>
 
   <!-- Made with Hope, and given to you freely. If it helped you find work, please keep this

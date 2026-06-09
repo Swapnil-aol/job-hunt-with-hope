@@ -114,7 +114,7 @@ Three calm textures give Hope its "technical-but-warm" identity. Without them th
 - Use Inter for text, JetBrains Mono for all metadata.
 - Keep the interactive section grid (click to filter) with an orange active state + integrity bars.
 - Use hexagonal KPI badges (person / groups / monitoring) and the 4-bar skill-level visual.
-- Group skills by category (colored ledges) and render projects as an Instagram-style 3-col grid.
+- Group skills by category (colored ledges). Render projects as the **expandable Experience-style `.item-card`** (collapsible head with title / tagline / optional dates + chevron; body with description, impact line, and `skills_applied` chips) — this is the default, because a project's full story (description, tagline, impact, skills) belongs in the card, not thrown away in a tile. The old Instagram-style 3-col tile grid is no longer required.
 - Place the LIVE pill inside the identity row, top-right.
 - Apply the scanline + grid textures and the subtle glows.
 - Render real org logos via Google Favicon with a lettermark fallback.

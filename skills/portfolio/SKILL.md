@@ -87,7 +87,7 @@ This is the **visible** differentiator. The portfolio looks unmistakably like a 
 - Light theme by default (warm cream + orange). Dark via the toggle, same layout.
 - Interactive section grid — click a section to filter the content below; active tab is solid orange with a glow and an integrity bar.
 - Hexagonal KPI badges (person / groups / monitoring) on each role.
-- Contribution cards grouped IC vs Leadership; skills grouped by category with a 4-bar level visual; projects in an Instagram-style 3-col grid.
+- Contribution cards grouped IC vs Leadership; skills grouped by category with a 4-bar level visual; projects render as the same expandable Experience-style `.item-card`s (see the projects-loop contract below) so each project's full story shows.
 - LIVE pill inside the identity row, top-right.
 - Scanline overlay on cards + 32×32 grid texture on the identity header + subtle glows. These textures are signatures — without them the design looks generic.
 - Inter for text, JetBrains Mono for all metadata. Material Symbols Rounded with inline-SVG fallback.
@@ -101,6 +101,25 @@ cat "$PLUGIN_ROOT/assets/templates/portfolio.html"
 ```
 
 Replace placeholders with content from the graph. **Do not deviate from the design tokens** in `$PLUGIN_ROOT/references/design-tokens.md` (loaded above).
+
+### Projects loop — substitution contract (item-cards, not tiles)
+
+The Projects pane uses the **same collapsible `.item-card` structure as Experience** — projects carry real content (`description`, `tagline`, `impact`, a full `skills_applied` list), and a tile would throw all of it away. The `<!-- HOPE:projects_loop_start … projects_loop_end -->` block in the template renders **one `.item-card.project` per project**. For each project, substitute:
+
+| Field | Goes into | Notes |
+|---|---|---|
+| `{{project_name}}` | `.role-title` (and `img alt`) | The project's name — the card title. |
+| `{{project_tagline}}` | `.role-company` | One-line framing of the project; fall back to a short tech/role summary if the project has no tagline. |
+| `{{project_dates}}` | `.role-dates` | Optional — **omit the whole `<span class="role-dates">` when the project has no dates** (don't emit an empty span). |
+| `{{#is_active}}…{{/is_active}}` | `.active-pill` | Render the "Active" pill for in-progress / ongoing projects; drop it otherwise. |
+| `{{project_domain}}` / `{{project_initial}}` | `.org-logo` favicon + `.org-fallback` | If the project has a link/host, use the Google favicon with the lettermark fallback; with no domain, render just `<span class="org-fallback">{{project_initial}}</span>`. |
+| `{{best_metric}}` | `.contrib-pill` | Optional headline metric (e.g. `1.2k stars`, `2,400 sold`); omit the pill if there's none. |
+| `{{project_description}}` | `.contrib-action` | The project's full description / what it is — the body's lead paragraph. |
+| `{{#impact}}…{{/impact}}` | `.contrib-impact` | The impact / outcome line; omit the block when absent. |
+| `{{skill_category}}` / `{{skill_name}}` | `.skill-chip` (in the `HOPE:project_skills_loop`) | One chip per entry in `skills_applied`; `skill_category` drives chip color via the same category map as Experience. Wrap in `{{#has_skills}}…{{/has_skills}}`. |
+| `{{link}}` / `{{link_label}}` | trailing `<a class="item linkedin">` | Optional external link (repo, live site, writeup); omit the block when the project has no link. |
+
+Mark the **first** project card `expanded` (so the pane opens populated). The card reuses Experience's `.item-card[data-expand] .item-head` markup verbatim, so the card-expand JS and the section-grid "Projects" filter work on project cards with no extra wiring. There is **no** project tile, hero gradient, or metric tag — those were removed.
 
 ## Bake the headshot into the file (do this at generation time)
 

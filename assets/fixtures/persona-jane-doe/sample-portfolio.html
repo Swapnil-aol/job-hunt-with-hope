@@ -413,7 +413,6 @@ img { display: block; }
 /* Density modes — applied to .wrap */
 .wrap[data-density="compact"] .item-card,
 .wrap[data-density="compact"] .edu-card,
-.wrap[data-density="compact"] .proj-tile,
 .wrap[data-density="compact"] .skill-cell { font-size: 0.94em; }
 .wrap[data-density="compact"] .item-head { padding: 10px 14px 10px 17px; }
 .wrap[data-density="compact"] .skill-cell { padding: 6px 10px; }
@@ -588,7 +587,7 @@ img { display: block; }
   .chevron { display: none !important; }
   /* Never split a card/section across a page. */
   .identity-card, .item-card, .skill-cat, .skill-cell, .edu-card,
-  .proj-tile, .contrib, .contrib-group, .section-pane {
+  .contrib, .contrib-group, .section-pane {
     break-inside: avoid; page-break-inside: avoid;
   }
   .footer { break-before: avoid; page-break-before: avoid; }
@@ -626,10 +625,11 @@ img { display: block; }
   gap: 18px;
 }
 
-/* Photo upload — 64x64 (between plugin's 56 and production's 80) */
+/* Photo upload — 104x104 (a prominent headshot; source bakes in at ~480px so
+   it downscales crisp). Identity row aligns the photo top to the name. */
 .photo-upload {
   position: relative;
-  width: 64px; height: 64px;
+  width: 104px; height: 104px;
   border-radius: var(--radius-button);
   background: var(--surface-2);
   border: 1.5px dashed var(--border-hover);
@@ -643,7 +643,7 @@ img { display: block; }
   transition: all 0.2s;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.10em;
   text-transform: uppercase;
 }
@@ -652,7 +652,7 @@ img { display: block; }
   color: var(--accent-orange);
   background: var(--accent-orange-bg);
 }
-.photo-upload .material-symbols-rounded { font-size: 20px; margin-bottom: 1px; }
+.photo-upload .material-symbols-rounded { font-size: 26px; margin-bottom: 2px; }
 .photo-upload.has-photo {
   border-style: solid;
   border-color: var(--accent-emerald);
@@ -1468,70 +1468,6 @@ h1.name {
 }
 
 /* ─── Project grid (Instagram-style 3-col) ─────────────────────────── */
-.proj-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-.proj-tile {
-  background: var(--card-bg);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-  aspect-ratio: 1 / 1;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  box-shadow: var(--shadow-sm);
-}
-.proj-tile:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent-orange);
-}
-.proj-tile .hero {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 10px 10px;
-  position: relative;
-}
-.proj-tile .metric-tag {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  border-radius: var(--radius-tight);
-  padding: 3px 7px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.proj-tile .info { padding: 8px 10px 10px; flex-shrink: 0; }
-.proj-tile .name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.005em;
-}
-.proj-tile .techs {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--text-dim);
-  margin-top: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.02em;
-}
-
 /* Footer */
 .footer {
   margin-top: 32px;
@@ -1550,11 +1486,12 @@ h1.name {
 @media (max-width: 640px) {
   .wrap { padding: 16px 14px 60px; }
   .identity-card { padding: 18px 18px; }
-  .identity-row { flex-direction: column; gap: 14px; }
+  /* Stack the (now larger) headshot above the identity info, left-aligned. */
+  .identity-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .photo-upload { width: 96px; height: 96px; }
   .identity-top { flex-direction: column; align-items: flex-start; gap: 8px; }
   h1.name { font-size: 20px; }
   .section-grid { grid-template-columns: 1fr; }
-  .proj-grid { grid-template-columns: repeat(2, 1fr); }
   .item-meta { flex-wrap: wrap; gap: 6px; }
   .item-meta .hex-kpi:nth-child(n+5) { display: none; } /* Drop monitoring kpi on tight screens */
 }
