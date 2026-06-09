@@ -23,19 +23,5 @@
     "claude",
     "skill",
     "plugin"
-  ],
-  "skills": [
-    "skills/hope",
-    "skills/onboarding",
-    "skills/discovery",
-    "skills/portfolio",
-    "skills/publish",
-    "skills/resume-tailor",
-    "skills/cover-letter",
-    "skills/application",
-    "skills/interview",
-    "skills/negotiation",
-    "skills/decision",
-    "skills/dashboard"
   ]
 }
