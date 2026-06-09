@@ -23,10 +23,10 @@ A portfolio is a small website about your work. Hope builds one from your own fa
 Then Hope can put it online. GitHub Pages is a free place to host a small website. Hope publishes your portfolio there, on a page **you own**. You get **one link to share** — in an application, on LinkedIn, in an email.
 
 <!-- IMAGE: portfolio-hero — see tasks/readme-image-prompts/ for the generation prompt -->
-![A finished Hope portfolio website, shown in its light theme and its dark theme side by side](assets/readme/portfolio-hero.png)
+<p align="center"><img src="assets/readme/portfolio-hero.png" alt="A finished Hope portfolio website, shown in its light theme and its dark theme side by side" width="720"></p>
 
 <!-- IMAGE: publish-flow — see tasks/readme-image-prompts/ for the generation prompt -->
-![Three steps left to right: your career.json file, the designed portfolio site, and a web link you own](assets/readme/publish-flow.png)
+<p align="center"><img src="assets/readme/publish-flow.png" alt="Three steps left to right: your career.json file, the designed portfolio site, and a web link you own" width="560"></p>
 
 ## Who Hope is for
 
@@ -53,7 +53,7 @@ Hope breaks the hunt into steps. You move through them at your own pace.
 The `hope` skill figures out where you are and sends you to the right step.
 
 <!-- IMAGE: journey — see tasks/readme-image-prompts/ for the generation prompt -->
-![A left-to-right path through the steps — onboarding, discovery, portfolio, publish, resume, cover letter, application, interview, negotiation, decision — with the dashboard as a band across all of them](assets/readme/journey.png)
+<p align="center"><img src="assets/readme/journey.png" alt="A left-to-right path through the steps — onboarding, discovery, portfolio, publish, resume, cover letter, application, interview, negotiation, decision — with the dashboard as a band across all of them" width="760"></p>
 
 ## Your data stays with you
 
@@ -64,7 +64,7 @@ You own this file. You can open it, move it, back it up, or delete it. **No trac
 The shape of the file is written down in [`references/career-graph-schema.md`](references/career-graph-schema.md), if you want to look.
 
 <!-- IMAGE: data-stays-home — see tasks/readme-image-prompts/ for the generation prompt -->
-![One laptop with a file labeled career.json inside it, and a clear cue that nothing leaves the machine — no cloud, no arrows out](assets/readme/data-stays-home.png)
+<p align="center"><img src="assets/readme/data-stays-home.png" alt="One laptop with a file labeled career.json inside it, and a clear cue that nothing leaves the machine — no cloud, no arrows out" width="420"></p>
 
 ## Install
 
@@ -80,7 +80,7 @@ Three ways to get Hope. Pick the one that fits you.
 ### Claude Code (terminal)
 
 ```bash
-/plugin marketplace add <owner>/claude-job-hunt-with-hope
+/plugin marketplace add oneconsciousness/claude-job-hunt-with-hope
 /plugin install hope
 ```
 
@@ -91,7 +91,7 @@ Three ways to get Hope. Pick the one that fits you.
 3. Upload the zip.
 4. Turn the skill on.
 
-> The exact marketplace name is set at public launch. Until then, use the repo URL shown above.
+> While the repo is private, the terminal install works for the owner (Claude Code uses your GitHub login). The public marketplace name is set at launch.
 
 ## Start
 
@@ -108,7 +108,7 @@ A good pair is **career-ops**: **career-ops finds jobs; Hope helps you apply wel
 career-ops: <https://github.com/santifer/career-ops>
 
 <!-- IMAGE: works-with-career-ops — see tasks/readme-image-prompts/ for the generation prompt -->
-![Two lanes side by side — career-ops finds jobs, Hope helps you apply — running together, not competing](assets/readme/works-with-career-ops.png)
+<p align="center"><img src="assets/readme/works-with-career-ops.png" alt="Two lanes side by side — career-ops finds jobs, Hope helps you apply — running together, not competing" width="560"></p>
 
 ## The look
 
