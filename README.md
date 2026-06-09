@@ -81,7 +81,7 @@ Three ways to get Hope. Pick the one that fits you.
 
 ```bash
 /plugin marketplace add oneconsciousness/claude-job-hunt-with-hope
-/plugin install hope
+/plugin install hope@hope
 ```
 
 ### claude.ai (web)
