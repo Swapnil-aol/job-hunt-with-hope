@@ -125,7 +125,18 @@ The moment they like it, lead them to put it online. That's what turns a file on
 2. Recommend publishing — warmly, as the default next step, and **carry the load yourself:**
    > "This is yours. Want me to put it online as your GitHub portfolio — one link you can drop in any application? I'll handle all the setup."
    Route to `hope-publish`. It is built so the user never has to make a technical decision — it sets things up if needed and does the work.
-3. If they'd rather wait, respect it — offer the cover letter (`hope-cover-letter`) or just let them sit with it. Recommend, never coerce.
+3. If they'd rather wait, respect it — just let them sit with it. Recommend, never coerce.
+
+## Closing the loop — after publish, or when they come back
+
+Once the portfolio is live (or any time the user returns), there's exactly one loop to offer — keep them inside it:
+
+> "Want to **update your portfolio** — feature different work, change the angle, edit a card — or **publish the changes** you've made? I can do either."
+
+- Want to change what's in it? Re-run this skill's iteration loop, then route back to `hope-publish` to push the update.
+- Happy with it and just want it online (or re-published after edits)? Route to `hope-publish`.
+
+That's the whole flow: collect their story → show the portfolio → put it online → update or re-publish on demand. Don't point them anywhere outside this loop.
 
 ## What you do not do
 

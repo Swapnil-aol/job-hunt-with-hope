@@ -110,15 +110,13 @@ If the answer is "this is wrong," fix it before continuing. The graph is the use
 
 ## The payoff: lead with the portfolio
 
-Onboarding's reward is **not** a dashboard — it's the user seeing *themselves*, beautifully presented, and being able to share it. The moment the graph is confirmed, go **straight into generating their portfolio.** Hand off to `hope-portfolio` (a general portfolio of their strongest work — no target role needed yet). Do **not** detour through discovery first; someone who just told you their story wants to *see* it.
+Onboarding's reward is the user seeing *themselves*, beautifully presented, and being able to share it. The moment the graph is confirmed, go **straight into generating their portfolio.** Hand off to `hope-portfolio` (a general portfolio of their strongest work — no target role needed yet). Don't detour anywhere first; someone who just told you their story wants to *see* it.
 
 Say it plainly, then do it:
 
 > "Your story's in. Now let me show you what it looks like."
 
-`hope-portfolio` owns the rest of the payoff — showing the portfolio **inside the Claude app**, handing over the **file path + an "open in Chrome" option**, the **Share / Save-as-PDF** actions, and then recommending you **put it online as your GitHub portfolio**. Follow that skill.
-
-(The dashboard — `assets/templates/dashboard.html` — is the cross-cutting "where am I" overview, surfaced later via `hope-dashboard` when the user wants the big picture. It is **not** the onboarding payoff.)
+`hope-portfolio` owns the rest of the payoff — showing the portfolio **inside the Claude app**, handing over the **file path + an "open in Chrome" option**, the **Share / Save-as-PDF** actions, and then recommending you **put it online as your GitHub portfolio** via `hope-publish`. Follow that skill.
 
 ## Hand-off
 

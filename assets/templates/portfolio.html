@@ -4,6 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{{name}} — Portfolio{{#target_company}} · {{target_company}}{{/target_company}}</title>
+<!-- Share target. Empty at generation time; the publish skill rewrites content=""
+     to the live GitHub Pages URL (https://<owner>.github.io/<repo>/) before the
+     final deploy push, so the Share button copies the canonical published link.
+     Opened locally before publish, the button falls back to window.location.href. -->
+<meta name="hope:share-url" content="" />
 <!-- Provenance (disclosed, not hidden): a standards-based generator tag + a
      schema.org ProfilePage so recruiters/crawlers can read who made this and with what.
      This is the user's file under MIT — see the footer note; it's theirs to keep or remove. -->
@@ -106,9 +111,42 @@ img { display: block; }
 .action-btn:hover { border-color: var(--accent-orange); color: var(--accent-orange); transform: translateY(-1px); }
 .action-btn svg { width: 13px; height: 13px; }
 .action-btn.copied { border-color: var(--accent-emerald); color: var(--accent-emerald); }
+/* ─── Print / Save-as-PDF ──────────────────────────────────────────────
+   One click → a clean PDF, no fiddling. We (1) force colors so the cream/orange
+   design survives, (2) expand every collapsed pane + card so the whole
+   portfolio prints (not just the open tab), (3) keep cards intact across page
+   breaks, and (4) drop the interactive chrome (topbar, chevrons). */
+@page { size: Letter; margin: 0.5in 0.55in; }
 @media print {
-  .topbar { display: none; }
-  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { color-scheme: light; }
+  html, body { background: #fff !important; }
+  *, *::before, *::after { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-size: 11px; }
+  .wrap { max-width: none; padding: 0; }
+  .topbar { display: none !important; }
+  /* Animations would otherwise leave staggered items at opacity:0 on the print canvas. */
+  .materialize, .stagger-1, .stagger-2, .stagger-3 { animation: none !important; opacity: 1 !important; }
+  /* Print every section, not just the active tab. */
+  .section-grid { display: none !important; }
+  .section-pane { display: block !important; }
+  .section-pane[data-pane]::before {
+    content: attr(data-pane);
+    display: block;
+    font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--accent-orange);
+    margin: 14px 0 8px;
+  }
+  .section-pane:first-of-type::before { margin-top: 4px; }
+  /* Expand all collapsed cards and hide the now-meaningless chevron. */
+  .item-body { max-height: none !important; overflow: visible !important; }
+  .chevron { display: none !important; }
+  /* Never split a card/section across a page. */
+  .identity-card, .item-card, .skill-cat, .skill-cell, .edu-card,
+  .proj-tile, .contrib, .contrib-group, .section-pane {
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .footer { break-before: avoid; page-break-before: avoid; }
 }
 
 .identity-card { position: relative; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); padding: 22px 24px; margin-bottom: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
@@ -636,19 +674,53 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
   document.getElementById('theme-toggle').addEventListener('click', () => {
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
-  // Share — native share sheet where available, otherwise copy the link. On the
-  // published page this copies the live URL; opened locally it copies the file path.
+  // Share — native share sheet where available, otherwise copy the link.
+  // URL source: the <meta name="hope:share-url"> content, which the publish skill
+  // rewrites to the canonical GitHub Pages URL. Empty (un-published) → fall back to
+  // window.location.href so it still works when opened directly on the live page.
   var shareBtn = document.getElementById('share-btn');
-  if (shareBtn) shareBtn.addEventListener('click', async () => {
-    var url = window.location.href;
-    try { if (navigator.share) { await navigator.share({ title: document.title, url: url }); return; } } catch (e) {}
-    try {
-      await navigator.clipboard.writeText(url);
-      var label = shareBtn.querySelector('span'); var prev = label ? label.textContent : '';
-      if (label) label.textContent = 'Copied!'; shareBtn.classList.add('copied');
-      setTimeout(function () { if (label) label.textContent = prev; shareBtn.classList.remove('copied'); }, 1600);
-    } catch (e) {}
-  });
+  if (shareBtn) {
+    var shareLabel = shareBtn.querySelector('span');
+    var flash = function (text, ok) {
+      if (shareLabel) shareLabel.textContent = text;
+      if (ok) shareBtn.classList.add('copied');
+      setTimeout(function () {
+        if (shareLabel) shareLabel.textContent = shareLabel.dataset.idle;
+        shareBtn.classList.remove('copied');
+      }, 1600);
+    };
+    if (shareLabel) shareLabel.dataset.idle = shareLabel.textContent;
+    var copyFallback = function (url) {
+      // Non-secure context (file://, http) — navigator.clipboard is undefined there.
+      // document.execCommand('copy') is deprecated but the only path that works.
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute'; ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select(); ta.setSelectionRange(0, url.length);
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        flash(ok ? 'Copied!' : 'Copy: ' + url, ok);
+      } catch (e) { flash('Copy: ' + url, false); }
+    };
+    shareBtn.addEventListener('click', async function () {
+      var meta = document.querySelector('meta[name="hope:share-url"]');
+      var canonical = meta && meta.content ? meta.content.trim() : '';
+      var url = canonical || window.location.href;
+      // No published link yet and opened from disk → don't leak the local file path.
+      if (!canonical && url.indexOf('file:') === 0) { flash('Publish first to share a link', false); return; }
+      if (navigator.share) {
+        try { await navigator.share({ title: document.title, url: url }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; /* real error → fall through */ }
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        try { await navigator.clipboard.writeText(url); flash('Copied!', true); return; }
+        catch (e) { /* fall through to execCommand */ }
+      }
+      copyFallback(url);
+    });
+  }
   // Save as PDF — opens the browser print dialog; pick "Save as PDF".
   var pdfBtn = document.getElementById('pdf-btn');
   if (pdfBtn) pdfBtn.addEventListener('click', function () { window.print(); });

@@ -3,11 +3,11 @@
   "owner": {
     "name": "Hope contributors"
   },
-  "description": "Hope — a Claude plugin for the job hunt. Onboarding to offer, in milestones.",
+  "description": "Hope — a Claude plugin for the job hunt. Build your portfolio, publish it free.",
   "plugins": [
     {
       "name": "hope",
-      "description": "Turn the job hunt into a journey of milestones. Generate portfolios, dashboards, tailored résumés, cover letters, interview prep, and outreach — all from a personal career graph stored on your machine.",
+      "description": "Build a designed portfolio website from your own facts and publish it to a free GitHub Pages site you own — all from a career file stored on your machine. One link to share.",
       "version": "0.1.0",
       "source": ".",
       "license": "MIT",

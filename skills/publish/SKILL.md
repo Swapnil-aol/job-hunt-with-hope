@@ -44,7 +44,7 @@ Find the generated file (default `career-graph/documents/portfolios/portfolio-*.
 Create `site/` and copy **only** the portfolio HTML (as `index.html`) + any local assets it references. Exclude `career.json`, notes, drafts. Hope portfolios are self-contained, so this is usually one copy.
 
 ### 3. Pre-flight — re-publish check, then setup
-- If `.publish.json` exists → **re-publish**: reuse the recorded repo/URL, skip to step 6's re-publish path.
+- If `.publish.json` exists → **re-publish**: reuse the recorded repo/URL, re-stamp the share link (step 6), then take step 7's re-publish path.
 - Else (first publish): quietly check for `git`, `gh`, and `gh auth status`.
   - **All present** → say it simply ("Setup's good — I can put this online for you"), then scan + confirm.
   - **Something missing** → **Setup help** (below). Guide, don't dump.
@@ -69,7 +69,28 @@ Not a technical card. A human sentence. Wait for yes:
 
 That's the whole gate. No repo jargon, no file list unless they ask.
 
-### 6. Execute (run it; narrate in plain words)
+### 6. Stamp the share link into the page (do this *before* any push)
+The portfolio carries an empty placeholder in its `<head>` (note it's self-closing):
+```html
+<meta name="hope:share-url" content="" />
+```
+The portfolio's **Share** button reads this tag: if `content` is set, it copies that canonical published URL; if empty, it falls back to `window.location.href`. So the live URL must be stamped into the file **before** it goes up — otherwise the Share button on the published page copies whatever address the visitor happens to be on, not the clean one you'd hand a recruiter.
+
+The live URL is deterministic from the owner + repo alone — `https://<owner>.github.io/<repo>/` — so you can compute it now, no waiting on the build. Stamp it into **both** copies:
+
+1. **The staged file** (`site/index.html`) — what actually gets pushed:
+   ```bash
+   sed -i '' -E 's|(<meta name="hope:share-url" content=")[^"]*(")|\1https://<owner>.github.io/<repo>/\2|' site/index.html
+   ```
+   (On Linux, `sed -i -E '...'` — drop the `''`.) The closing capture is just `(")`, not `(">)` — the tag is self-closing (`content="" />`), so anchoring on `">` would silently never match.
+2. **The user's local saved copy** — the *one* portfolio file you staged from in step 1. Resolve and reuse that exact path; do **not** glob `portfolio-*.html`, or you'll overwrite the Share link on other portfolios the user built for different targets/repos:
+   ```bash
+   sed -i '' -E 's|(<meta name="hope:share-url" content=")[^"]*(")|\1https://<owner>.github.io/<repo>/\2|' "<the-portfolio-file-from-step-1>"
+   ```
+
+Confirm the replace landed (`grep hope:share-url site/index.html` should show the URL) before pushing. On **re-publish**, re-stamp both anyway — the URL is the same, but this self-heals any copy that was generated before the page first went live.
+
+### 7. Execute (run it; narrate in plain words)
 Say what's happening simply — "Putting it online…", "Setting up the page…", "Almost there — the web address is waking up." Run:
 
 **First publish (GitHub Pages):**
@@ -77,22 +98,26 @@ Say what's happening simply — "Putting it online…", "Setting up the page…"
 cd site
 git init -b main && git add . && git commit -m "Publish portfolio"
 gh repo create <owner>/<repo> --public --source=. --remote=origin --push
-gh api -X POST repos/<owner>/<repo>/pages -f 'source[branch]=main' -f 'source[path]=/'
+# Enabling Pages is a separate call — --push alone does not turn it on.
+# Re-publish safety: if Pages is already on, this POST 422s; check first and skip it.
+gh api repos/<owner>/<repo>/pages --jq .status 2>/dev/null \
+  || gh api -X POST repos/<owner>/<repo>/pages -f 'source[branch]=main' -f 'source[path]=/'
+# Poll until the build finishes (sleep ~5s between checks); "built" means live.
 gh api repos/<owner>/<repo>/pages --jq .status   # repeat until "built"
 ```
-Then write `.publish.json` with `{ host, owner, repo, url, branch }`.
+Then write `.publish.json` with `{ host, owner, repo, url, branch }` (`url` = `https://<owner>.github.io/<repo>/`, `branch` = `main`).
 
 **Re-publish (idempotent):**
 ```bash
 cd site
 git add -A && git commit -m "Update portfolio" && git push
 ```
-Same repo, same URL — never a second site for the same portfolio.
+Same repo, same URL — never a second site for the same portfolio. Pages rebuilds on its own when the branch changes; no API calls needed.
 
-### 7. Return the URL
-Plainly and warmly: "Done — your portfolio is live at **<url>**. Copy it into any application. It can take a minute to appear the first time." Offer to open it for them.
+### 8. Return the URL
+Plainly and warmly: "Done — your portfolio is live at **<url>**. Copy it into any application. It can take a minute to appear the first time." Offer to open it for them. The page's own **Share** button now copies this exact link too.
 
-### 8. Custom domain (only if they ask)
+### 9. Custom domain (only if they ask)
 If they raise their own domain: write a `CNAME` file (commit, push) and **print** the exact DNS records to add at their registrar (`CNAME` `www` → `<owner>.github.io`, or apex `A` records per GitHub's IPs). You never edit their DNS — print the records, let them add them.
 
 ## Hosts
@@ -120,4 +145,4 @@ Warm, calm, in control — you know how this works so they don't have to. Plain 
 
 ## Hand-off
 
-After publishing, record the live URL on the user's `CuratedPortfolio` in the graph. Then offer the natural next step — `hope-application` (use the link in an application) or `hope-dashboard` (see where they are). Recommend; never push.
+After publishing, record the live URL on the user's `CuratedPortfolio` in the graph. The portfolio is now live — the user can drop the link into any application. If they want changes, offer to update the portfolio and re-publish (same repo, same URL). Recommend; never push.

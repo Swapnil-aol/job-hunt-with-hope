@@ -14,7 +14,7 @@ I built Hope while job-hunting. The one thing I've submitted with it — my port
 
 Claude is an AI assistant. A plugin adds new skills to it. Hope is a plugin for Claude.
 
-Hope helps you with your job hunt. It does not look for job listings. It helps you with everything after you find one — how you **present yourself**, and how you **apply well**.
+Hope helps you with your job hunt. It does not look for job listings. **In v0.1, Hope does one thing well:** it builds your portfolio website and puts it online.
 
 ## What you make
 
@@ -32,25 +32,17 @@ Then Hope can put it online. GitHub Pages is a free place to host a small websit
 
 Anyone looking for work. Hope is for job seekers, not recruiters.
 
-## The steps of a job hunt
+## The steps, in v0.1
 
-Hope breaks the hunt into steps. You move through them at your own pace.
+v0.1 ships one flow: tell Hope about yourself, get a portfolio, put it online.
 
 | Step | What it does | Skill |
 |---|---|---|
 | Onboarding | Gets to know you and your work | `onboarding` |
-| Discovery | Helps you weigh roles worth chasing | `discovery` |
 | Portfolio | Builds your portfolio website | `portfolio` |
 | Publish | Puts it online on a page you own | `publish` |
-| Resume | Tailors your resume to a role | `resume-tailor` |
-| Cover letter | Writes a plain, honest cover letter | `cover-letter` |
-| Application | Helps you apply, asks before submitting | `application` |
-| Interview | Preps you and helps you reflect after | `interview` |
-| Negotiation | Helps you read and answer an offer | `negotiation` |
-| Decision | Helps you accept or decline with grace | `decision` |
-| Dashboard | Shows where you are, at a glance | `dashboard` |
 
-The `hope` skill figures out where you are and sends you to the right step.
+**Coming in later releases:** weighing roles, tailored resumes, cover letters, applying with care, interview prep, negotiation, deciding, and a dashboard. They're built — they're just not in v0.1 yet.
 
 <!-- IMAGE: journey — see tasks/readme-image-prompts/ for the generation prompt -->
 <p align="center"><img src="assets/readme/journey.png" alt="A left-to-right path through the steps — onboarding, discovery, portfolio, publish, resume, cover letter, application, interview, negotiation, decision — with the dashboard as a band across all of them" width="760"></p>
