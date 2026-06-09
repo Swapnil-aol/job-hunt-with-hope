@@ -1,6 +1,8 @@
 {
   "name": "hope",
-  "owner": "hope-contributors",
+  "owner": {
+    "name": "Hope contributors"
+  },
   "description": "Hope — a Claude plugin for the job hunt. Onboarding to offer, in milestones.",
   "plugins": [
     {
