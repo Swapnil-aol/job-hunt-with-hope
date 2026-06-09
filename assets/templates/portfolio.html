@@ -102,6 +102,14 @@ img { display: block; }
 .theme-toggle .icon-moon { display: none; }
 [data-theme="dark"] .theme-toggle .icon-sun { display: none; }
 [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+.action-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: var(--radius-pill); background: var(--card-bg); border: 1px solid var(--border-default); color: var(--text-secondary); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.2s; }
+.action-btn:hover { border-color: var(--accent-orange); color: var(--accent-orange); transform: translateY(-1px); }
+.action-btn svg { width: 13px; height: 13px; }
+.action-btn.copied { border-color: var(--accent-emerald); color: var(--accent-emerald); }
+@media print {
+  .topbar { display: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 
 .identity-card { position: relative; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); padding: 22px 24px; margin-bottom: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .identity-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; z-index: 0; }
@@ -291,6 +299,14 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 <div class="wrap">
 
   <div class="topbar materialize">
+    <button id="share-btn" class="action-btn" type="button" aria-label="Share this portfolio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"></path></svg>
+      <span>Share</span>
+    </button>
+    <button id="pdf-btn" class="action-btn" type="button" aria-label="Save as PDF">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
+      <span>Save as PDF</span>
+    </button>
     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" type="button">
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -620,6 +636,22 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
   document.getElementById('theme-toggle').addEventListener('click', () => {
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
+  // Share — native share sheet where available, otherwise copy the link. On the
+  // published page this copies the live URL; opened locally it copies the file path.
+  var shareBtn = document.getElementById('share-btn');
+  if (shareBtn) shareBtn.addEventListener('click', async () => {
+    var url = window.location.href;
+    try { if (navigator.share) { await navigator.share({ title: document.title, url: url }); return; } } catch (e) {}
+    try {
+      await navigator.clipboard.writeText(url);
+      var label = shareBtn.querySelector('span'); var prev = label ? label.textContent : '';
+      if (label) label.textContent = 'Copied!'; shareBtn.classList.add('copied');
+      setTimeout(function () { if (label) label.textContent = prev; shareBtn.classList.remove('copied'); }, 1600);
+    } catch (e) {}
+  });
+  // Save as PDF — opens the browser print dialog; pick "Save as PDF".
+  var pdfBtn = document.getElementById('pdf-btn');
+  if (pdfBtn) pdfBtn.addEventListener('click', function () { window.print(); });
   document.querySelectorAll('.section-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-section');
