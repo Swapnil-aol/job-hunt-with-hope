@@ -8,10 +8,7 @@
   },
   "license": "MIT",
   "homepage": "https://github.com/oneconsciousness/claude-job-hunt-with-hope",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/oneconsciousness/claude-job-hunt-with-hope.git"
-  },
+  "repository": "https://github.com/oneconsciousness/claude-job-hunt-with-hope.git",
   "keywords": [
     "career",
     "job-search",
