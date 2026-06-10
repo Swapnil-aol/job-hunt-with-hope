@@ -163,9 +163,9 @@ Substitute, from the graph:
 | Placeholder | Content |
 |---|---|
 | `{{name}}` / `{{headline}}` | Same values as the identity card. |
-| `{{resume_contact_line}}` | Plain text: `location · email · linkedin · site` — include only the fields the user actually has, joined with ` · `. No links-as-icons, no markup tricks. |
+| `{{resume_contact_line}}` | One link-bearing line, joined with ` · `, only the fields the user actually has. **Email shown as the address itself**, mailto-linked — the address is the datum recruiters and parsers need. Phone as plain text. **LinkedIn / GitHub / Portfolio / personal site as worded anchors** (`<a href="…">LinkedIn</a>`) — never a visible raw URL. When the portfolio is published, include `<a href="{SITE}">Portfolio</a>`. No links-as-icons. |
 | `{{resume_summary}}` | 2–3 tight sentences from the graph. Résumé register — factual and scannable, not Hope's designerly portfolio voice. |
-| `<!-- HOPE:resume_experience_loop_start/end -->` | One block per role: title, company, dates, and **2–4 achievement bullets led by metrics** pulled from the role's contributions ("Cut onboarding from 3 weeks to 1 by …" — number first, mechanism second). Bullets use the inner loop `<!-- HOPE:resume_bullets_loop --> … <!-- /HOPE:resume_bullets_loop -->`, one `<li>{{resume_bullet}}</li>` per achievement. |
+| `<!-- HOPE:resume_experience_loop_start/end -->` | One block per role: title, company, dates, and **2–4 achievement bullets led by metrics** pulled from the role's contributions ("Cut onboarding from 3 weeks to 1 by …" — number first, mechanism second). Bullets use the inner loop `<!-- HOPE:resume_bullets_loop --> … <!-- /HOPE:resume_bullets_loop -->`, one `<li>{{resume_bullet}}</li>` per achievement. **Each bullet carries exactly ONE `<strong>` around its load-bearing sub-phrase** — the metric + object, 2–6 words ("Cut onboarding <strong>from 3 weeks to 1</strong> by …") — never the whole bullet, never two strongs. Links inside bullets are **worded anchors** (a project name, `Demo`, `GitHub`) — never bare URLs. |
 | `<!-- HOPE:resume_education_loop_start/end -->` | One block per education/certification entry: institution, credential, year. |
 | `<!-- HOPE:resume_skills_line -->` | Top **10–14 skills, comma-joined**, strongest-evidenced and most market-demanded first. |
 

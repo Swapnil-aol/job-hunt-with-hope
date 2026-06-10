@@ -365,6 +365,11 @@ img { display: block; }
   body.print-doc-resume.print-style-classic .resume-dates { font-size: calc(10.5pt * var(--rfs, 1)); font-style: italic; }
   body.print-doc-resume.print-style-classic #resume-view ul { margin: 3pt 0 0; padding-left: 14pt; }
   body.print-doc-resume.print-style-classic #resume-view li { margin: 0 0 2.5pt; }
+  /* One bolded key sub-phrase per bullet (see #resume-view authoring comments). */
+  body.print-doc-resume.print-style-classic #resume-view strong { font-weight: 700; }
+  /* Links: resume-convention subtle — inherit the ink, thin underline.
+     No web-blue, no color shift; hrefs still print as clickable PDF annotations. */
+  body.print-doc-resume.print-style-classic #resume-view a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5pt; text-underline-offset: 2pt; }
 
   /* ── RESUME · MODERN — Inter, compact left-aligned header, thin rules,
         one restrained orange accent on the name + section rules only.
@@ -386,6 +391,12 @@ img { display: block; }
   body.print-doc-resume.print-style-modern .resume-dates { font-size: calc(9.5pt * var(--rfs, 1)); color: #555; }
   body.print-doc-resume.print-style-modern #resume-view ul { margin: 4pt 0 0; padding-left: 13pt; }
   body.print-doc-resume.print-style-modern #resume-view li { margin: 0 0 3pt; }
+  /* One bolded key sub-phrase per bullet (see #resume-view authoring comments). */
+  body.print-doc-resume.print-style-modern #resume-view strong { font-weight: 700; }
+  /* Links inherit the ink; the accent tints ONLY the contact line's underline —
+     bullets keep a plain underline. Restrained accent, never web-blue. */
+  body.print-doc-resume.print-style-modern #resume-view a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5pt; text-underline-offset: 2pt; }
+  body.print-doc-resume.print-style-modern .resume-contact a { text-decoration-color: #D97706; }
 
   /* ── RESUME · COMPACT — dense one-pager AT the readability floor: body is
         exactly 10pt (never smaller — its --rfs floor scale is 1.0, so
@@ -407,6 +418,11 @@ img { display: block; }
   body.print-doc-resume.print-style-compact .resume-dates { font-size: calc(10pt * var(--rfs, 1)); color: #444; }
   body.print-doc-resume.print-style-compact #resume-view ul { margin: 1pt 0 0; padding-left: 11pt; }
   body.print-doc-resume.print-style-compact #resume-view li { margin: 0 0 1pt; }
+  /* One bolded key sub-phrase per bullet (see #resume-view authoring comments).
+     700 holds at 10pt; drop to 600 ONLY if it muddies in the printed PDF — judge by eye. */
+  body.print-doc-resume.print-style-compact #resume-view strong { font-weight: 700; }
+  /* Links: inherit the ink + thin underline. No color shift at 10pt density. */
+  body.print-doc-resume.print-style-compact #resume-view a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5pt; text-underline-offset: 1.5pt; }
 
 .identity-card { position: relative; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); padding: 22px 24px; margin-bottom: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .identity-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; z-index: 0; }
@@ -1261,11 +1277,27 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
   <!-- Always hidden on screen (#resume-view{display:none}); shown ONLY when
        printing with body.print-doc-resume, set by the export chooser. The
        markup is deliberately ATS-parseable: real <h1>/<h2>/<ul><li>, standard
-       section names, no tables, no text-in-images, no icon fonts.
+       section names, no tables, no text-in-images, no icon fonts, no
+       letter-spaced text. LINK RULE everywhere in this view: links are WORDED
+       anchors whose visible text is a real word — <a href="...">LinkedIn</a>,
+       <a href="...">GitHub</a>, <a href="...">Demo</a>, a project name —
+       never a visible raw URL. Anchor text is real text, so ATS extraction
+       keeps the words; raw URLs are the thing we drop. The mailto:/https:
+       hrefs become clickable annotations in Chrome's print-to-PDF.
        Portfolio skill substitutes:
-         {{resume_contact_line}} — one plain-text line: location · email · linkedin
+         {{resume_contact_line}} — one link-bearing line: location · email ·
+                                   phone · worded links. Email is shown AS THE
+                                   ADDRESS and mailto-linked (the address itself
+                                   is the datum — ATS parsers need it as text).
+                                   Phone is plain text. LinkedIn / GitHub /
+                                   Portfolio / personal site are worded anchors
+                                   (<a href="...">LinkedIn</a>), never visible
+                                   URLs. Where the portfolio is published,
+                                   include <a href="{SITE}">Portfolio</a>.
          {{resume_summary}}      — 2-3 sentence professional summary
-         resume_experience loop  — role, company, dates, 2-4 metric-led bullets
+         resume_experience loop  — role, company, dates, 2-4 metric-led bullets,
+                                   each carrying ONE bolded key sub-phrase (see
+                                   the loop comment below)
          resume_education loop   — degree, institution, dates
          HOPE:resume_skills_line — replaced with the comma-joined skill names -->
   <div id="resume-view" hidden>
@@ -1283,7 +1315,16 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
       <!-- HOPE:resume_experience_loop_start
            For each Experience (sort: is_current first, then start_date desc),
            render the entry below. 2-4 bullets per role; lead each bullet with
-           the quantified achievement where the graph carries a metric. -->
+           the quantified achievement where the graph carries a metric.
+           BOLD RULE: each bullet MAY carry exactly ONE inline <strong> around
+           its load-bearing sub-phrase — the metric + object, the "what moved":
+           "Cut onboarding <strong>from 3 weeks to 1</strong> by pairing every
+           hire with a design buddy." 2-6 words inside the strong, never the
+           whole bullet, never two strongs (bold soup kills skimmability
+           instead of helping it).
+           LINKS in bullets and entry headers are allowed as worded anchors —
+           a project name (<a href="...">Typebook</a>), <a href="...">Demo</a>,
+           <a href="...">GitHub</a> — never bare URLs. -->
       <article class="resume-entry">
         <div class="resume-entry-head">
           <h3>{{role_title}}</h3>

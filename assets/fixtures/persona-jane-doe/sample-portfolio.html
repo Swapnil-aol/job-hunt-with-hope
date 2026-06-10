@@ -827,6 +827,11 @@ img { display: block; }
   body.print-doc-resume.print-style-classic .resume-dates { font-size: calc(10.5pt * var(--rfs, 1)); font-style: italic; }
   body.print-doc-resume.print-style-classic #resume-view ul { margin: 3pt 0 0; padding-left: 14pt; }
   body.print-doc-resume.print-style-classic #resume-view li { margin: 0 0 2.5pt; }
+  /* One bolded key sub-phrase per bullet (see #resume-view authoring comments). */
+  body.print-doc-resume.print-style-classic #resume-view strong { font-weight: 700; }
+  /* Links: resume-convention subtle — inherit the ink, thin underline.
+     No web-blue, no color shift; hrefs still print as clickable PDF annotations. */
+  body.print-doc-resume.print-style-classic #resume-view a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5pt; text-underline-offset: 2pt; }
 
   /* ── RESUME · MODERN — Inter, compact left-aligned header, thin rules,
         one restrained orange accent on the name + section rules only.
@@ -848,6 +853,12 @@ img { display: block; }
   body.print-doc-resume.print-style-modern .resume-dates { font-size: calc(9.5pt * var(--rfs, 1)); color: #555; }
   body.print-doc-resume.print-style-modern #resume-view ul { margin: 4pt 0 0; padding-left: 13pt; }
   body.print-doc-resume.print-style-modern #resume-view li { margin: 0 0 3pt; }
+  /* One bolded key sub-phrase per bullet (see #resume-view authoring comments). */
+  body.print-doc-resume.print-style-modern #resume-view strong { font-weight: 700; }
+  /* Links inherit the ink; the accent tints ONLY the contact line's underline —
+     bullets keep a plain underline. Restrained accent, never web-blue. */
+  body.print-doc-resume.print-style-modern #resume-view a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5pt; text-underline-offset: 2pt; }
+  body.print-doc-resume.print-style-modern .resume-contact a { text-decoration-color: #D97706; }
 
   /* ── RESUME · COMPACT — dense one-pager AT the readability floor: body is
         exactly 10pt (never smaller — its --rfs floor scale is 1.0, so
@@ -869,6 +880,11 @@ img { display: block; }
   body.print-doc-resume.print-style-compact .resume-dates { font-size: calc(10pt * var(--rfs, 1)); color: #444; }
   body.print-doc-resume.print-style-compact #resume-view ul { margin: 1pt 0 0; padding-left: 11pt; }
   body.print-doc-resume.print-style-compact #resume-view li { margin: 0 0 1pt; }
+  /* One bolded key sub-phrase per bullet (see #resume-view authoring comments).
+     700 holds at 10pt; drop to 600 ONLY if it muddies in the printed PDF — judge by eye. */
+  body.print-doc-resume.print-style-compact #resume-view strong { font-weight: 700; }
+  /* Links: inherit the ink + thin underline. No color shift at 10pt density. */
+  body.print-doc-resume.print-style-compact #resume-view a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.5pt; text-underline-offset: 1.5pt; }
 
 /* ─── Share menu (popover) ──────────────────────────────────────────────
    Opened by #share-btn. Items: Copy link · LinkedIn · X · WhatsApp · Email.
@@ -5972,7 +5988,21 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
   <!-- Always hidden on screen (#resume-view{display:none}); shown ONLY when
        printing with body.print-doc-resume, set by the export chooser. The
        markup is deliberately ATS-parseable: real <h1>/<h2>/<ul><li>, standard
-       section names, no tables, no text-in-images, no icon fonts.
+       section names, no tables, no text-in-images, no icon fonts, no
+       letter-spaced text. LINK RULE everywhere in this view: links are WORDED
+       anchors whose visible text is a real word — <a href="...">LinkedIn</a>,
+       <a href="...">Portfolio</a>, <a href="...">Demo</a>, a project name —
+       never a visible raw URL. Anchor text is real text, so ATS extraction
+       keeps the words; raw URLs are the thing we drop. The mailto:/https:
+       hrefs become clickable annotations in Chrome's print-to-PDF. The one
+       exception is email: shown AS THE ADDRESS and mailto-linked (the address
+       itself is the datum — ATS parsers need it as text); phone stays plain
+       text. BOLD RULE: bullets are metric-led AND each MAY carry exactly ONE
+       inline <strong> around its load-bearing sub-phrase — the metric +
+       object, the "what moved": "Cut onboarding <strong>from 3 weeks to
+       1</strong> by pairing every hire with a design buddy." 2-6 words inside
+       the strong, never the whole bullet, never two strongs (bold soup kills
+       skimmability instead of helping it).
        SAMPLE LIMITATION: this fixture carries 5 demo personas via the
        demo-controls panel, but the resume view (and the share/OG data in
        <head>) is populated for JANE DOE — the default persona — only.
@@ -5981,11 +6011,11 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
     <header class="resume-header">
       <h1>Jane Doe</h1>
       <p class="resume-headline">Senior Product Designer · Type &amp; Systems</p>
-      <p class="resume-contact">Brooklyn, NY · jane.doe@example.com · +1 (917) 555-1247 · linkedin.com/in/janedoe-fictional</p>
+      <p class="resume-contact">Brooklyn, NY · <a href="mailto:jane.doe@example.com">jane.doe@example.com</a> · +1 (917) 555-1247 · <a href="https://www.linkedin.com/in/janedoe-fictional">LinkedIn</a> · <a href="https://janedoe-fictional.github.io/portfolio/">Portfolio</a></p>
     </header>
     <section class="resume-section">
       <h2>Summary</h2>
-      <p class="resume-summary">Product designer with 9 years across B2B SaaS — design systems, developer tools, and brand-as-product work at Figma, Linear, and Stripe. Led the Figma design-system consolidation across 12 product teams; founded a mentorship program at Stripe that became standard onboarding. Author of Typebook (2,400+ copies sold) and the open-source Type Specimen library.</p>
+      <p class="resume-summary">Product designer with 9 years across B2B SaaS — design systems, developer tools, and brand-as-product work at Figma, Linear, and Stripe. Led the Figma design-system consolidation across 12 product teams; founded a mentorship program at Stripe that became standard onboarding. Author of <a href="https://janedoe-fictional.github.io/typebook/">Typebook</a> (2,400+ copies sold) and the open-source Type Specimen library.</p>
     </section>
     <section class="resume-section">
       <h2>Experience</h2>
@@ -5996,9 +6026,9 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
         </div>
         <p class="resume-org">Figma</p>
         <ul>
-          <li>Designed the variables system overhaul that became the foundation for theming, multi-brand, and accessibility programs — adoption hit 45% of public design files within 6 months of GA, the biggest non-component launch since Auto Layout.</li>
-          <li>Led the design-system consolidation across 12 product teams — designed the governance model, ran the RFC process, and shipped unified components; design-system adoption up 37% with 37% surface-area unification in 8 months.</li>
-          <li>Cut new-designer onboarding from 3 weeks to 1 through unified components and a documented governance model.</li>
+          <li>Designed the variables system overhaul that became the foundation for theming, multi-brand, and accessibility programs — adoption hit <strong>45% of public design files</strong> within 6 months of GA, the biggest non-component launch since Auto Layout.</li>
+          <li>Led the design-system consolidation across 12 product teams — designed the governance model, ran the RFC process, and shipped unified components; design-system <strong>adoption up 37%</strong> with 37% surface-area unification in 8 months.</li>
+          <li>Cut new-designer onboarding <strong>from 3 weeks to 1</strong> through unified components and a documented governance model.</li>
         </ul>
       </article>
       <article class="resume-entry">
@@ -6008,8 +6038,8 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
         </div>
         <p class="resume-org">Linear</p>
         <ul>
-          <li>Shipped Linear's keyboard-first command palette — defined the interaction model and prototyped across three rounds of usability testing; power-user retention up 18% in the adopting cohort, pattern still ships in 2026.</li>
-          <li>Owned the design language for Linear's iOS and Android launch — partnered with two engineers from primitive components to public release; shipped on time with zero design reworks post-launch, the company's first cross-platform release with a unified design language.</li>
+          <li>Shipped Linear's keyboard-first command palette — defined the interaction model and prototyped across three rounds of usability testing; <strong>power-user retention up 18%</strong> in the adopting cohort, pattern still ships in 2026.</li>
+          <li>Owned the design language for Linear's iOS and Android launch — partnered with two engineers from primitive components to public release; shipped on time with <strong>zero design reworks</strong> post-launch, the company's first cross-platform release with a unified design language.</li>
         </ul>
       </article>
       <article class="resume-entry">
@@ -6019,8 +6049,8 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
         </div>
         <p class="resume-org">Stripe</p>
         <ul>
-          <li>Redesigned the public pricing pages and self-serve onboarding flow — sign-up conversion up 12% and pricing-related support tickets down 38% within the first quarter.</li>
-          <li>Founded the design mentorship rotation — matched 6 juniors with 6 seniors over 18 months; all 6 juniors promoted within 24 months and the playbook was adopted as standard onboarding for new design hires.</li>
+          <li>Redesigned the public pricing pages and self-serve onboarding flow — <strong>sign-up conversion up 12%</strong> and pricing-related support tickets down 38% within the first quarter.</li>
+          <li>Founded the design mentorship rotation — matched 6 juniors with 6 seniors over 18 months; <strong>all 6 juniors promoted</strong> within 24 months and the playbook was adopted as standard onboarding for new design hires.</li>
         </ul>
       </article>
       <article class="resume-entry">
@@ -6030,8 +6060,8 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
         </div>
         <p class="resume-org">Pentagram</p>
         <ul>
-          <li>Researched and prototyped wordmark variants for a cultural-institution rebrand; contributed to the partner-led pitch deck and final mark exploration.</li>
-          <li>Selected as the studio's seasonal "type explorer" and invited back to a winter rotation.</li>
+          <li>Researched and prototyped wordmark variants for a cultural-institution rebrand; contributed to the <strong>partner-led pitch deck</strong> and final mark exploration.</li>
+          <li>Selected as the studio's seasonal "type explorer" and <strong>invited back to a winter rotation</strong>.</li>
         </ul>
       </article>
       <article class="resume-entry">
@@ -6041,8 +6071,8 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
         </div>
         <p class="resume-org">Rhode Island School of Design</p>
         <ul>
-          <li>Digitised 142 letterforms from the studio's pre-1960 collection; built the metadata schema and the front-end browse interface for the open archive.</li>
-          <li>Archive remains in active use across two departments and four typeface conservation projects.</li>
+          <li>Digitised <strong>142 letterforms</strong> from the studio's pre-1960 collection; built the metadata schema and the front-end browse interface for the open archive.</li>
+          <li>Archive remains in <strong>active use across two departments</strong> and four typeface conservation projects.</li>
         </ul>
       </article>
     </section>
