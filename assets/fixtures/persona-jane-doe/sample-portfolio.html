@@ -605,12 +605,41 @@ img { display: block; }
   /* Expand all collapsed cards and hide the now-meaningless chevron. */
   .item-body { max-height: none !important; overflow: visible !important; }
   .chevron { display: none !important; }
-  /* Never split a card/section across a page. */
-  .identity-card, #summary-band, .item-card, .skill-cat, .skill-cell, .edu-card,
-  .contrib, .contrib-group, .section-pane {
+  /* Keep SMALL units intact; let big containers (pane, card, group) break across
+     pages. Keeping .section-pane/.item-card/.contrib-group together is what caused
+     page-sized blank gaps — a container taller than one page can never "avoid". */
+  .identity-card, #summary-band, .item-head, .contrib, .skill-cell, .edu-card {
     break-inside: avoid; page-break-inside: avoid;
   }
+  /* Headers never strand at the bottom of a page — they stay with their content. */
+  .section-pane[data-pane]::before, .item-head, .group-header, .skill-cat-header {
+    break-after: avoid; page-break-after: avoid;
+  }
+  /* When a card fragments across pages, give each fragment its full border/bg. */
+  .item-card, .contrib-group { box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  p { orphans: 3; widows: 3; }
   .footer { break-before: avoid; page-break-before: avoid; }
+  /* ── Print-weight diet — keep the brand, drop the rasterizers. ──
+     Blurred glows/shadows are the no.1 PDF rasterization trigger; depth is
+     carried by the existing 1px borders. (!important where the component's
+     own rule sets a literal shadow later in source order.) */
+  :root { --accent-orange-glow: none; --accent-emerald-glow: none; --shadow-sm: none; --shadow-md: none; }
+  .live-pill, .active-pill, .metric-badge, .metric-badge.achieved,
+  .summary-eyebrow .ledge, .skill-cat-header .ledge { box-shadow: none !important; }
+  /* Scanlines stay (they're brand) — but as a pre-tiled 1×3 PNG with the
+     light-theme --scan-line color baked in (print forces light), instead of a
+     repeating-linear-gradient that becomes a viewer-hostile Type-4 PostScript
+     shading. Opacity stays 0.30, same as on screen. */
+  .item-card::before { background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAYAAABS3WWCAAAAD0lEQVR42mNggAN5MT5WAADuAEkdWZ51AAAAAElFTkSuQmCC") repeat !important; }
+  /* Grid texture: ONE 32×32 PNG tile (light --grid-line baked in) replaces the
+     2-axis gradient pair — kills the content-stream fill-op explosion. */
+  .identity-card::before, .summary-band::before { background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAANUlEQVR42u3OoQ0AQAgEQTTiJZb+uyT5JhDMJXt6ouvlZvFvcwAAAAAAAAAAAAAAAAAA5wEDA0kS9G3fBkQAAAAASUVORK5CYII=") !important; }
+  /* Accent bars + divider rules go solid in print — gradients are PDF shading
+     functions, and a gradient with an alpha stop emits TWO (the color ramp
+     plus a function-based alpha ramp). Zero-shading budget. */
+  .item-card .accent-bar { background: var(--text-muted) !important; }
+  .item-card.is-current .accent-bar { background: var(--accent-orange) !important; box-shadow: none !important; }
+  .item-divider { background: var(--accent-cyan-edge) !important; }
 }
 
 /* ─── Export chooser print styles ──────────────────────────────────────
@@ -625,7 +654,14 @@ img { display: block; }
 @media print {
   /* In-page chrome never prints, whichever document was chosen. */
   #export-modal, #share-menu { display: none !important; }
+}
 
+/* The two portfolio style variants below are intentionally NOT @media-print
+   gated: their body classes exist only during the export lifecycle (set on
+   confirm, removed on afterprint), and the Continuous layout measures the
+   document height ON SCREEN — the variant's layout must be part of that
+   measurement or the injected single page comes out the wrong height. A brief
+   restyle flash before the print dialog opens is acceptable. */
   /* ── PORTFOLIO · INK — conservative monochrome for corporate submissions.
         White bg, near-black text, no textures/scanlines/grid, no color
         accents; rules, weight and spacing carry the hierarchy. ── */
@@ -650,7 +686,7 @@ img { display: block; }
      and .skill-chip rules below; the ledge/eyebrow go #111 via the token — only
      the ledge's literal glow needs killing (paired with skill-cat's, further down). */
   body.print-doc-portfolio.print-style-ink .summary-eyebrow .ledge { box-shadow: none; }
-  body.print-doc-portfolio.print-style-ink .item-card.is-current .accent-bar { background: linear-gradient(180deg, #111, #111 60%, transparent); box-shadow: none; }
+  body.print-doc-portfolio.print-style-ink .item-card.is-current .accent-bar { background: #111 !important; box-shadow: none; }
   body.print-doc-portfolio.print-style-ink .live-pill,
   body.print-doc-portfolio.print-style-ink .active-pill { background: transparent; border-color: #c8c8c8; color: #111; box-shadow: none; }
   body.print-doc-portfolio.print-style-ink .live-pill .dot { background: #111; animation: none; }
@@ -665,14 +701,22 @@ img { display: block; }
   body.print-doc-portfolio.print-style-ink .hex-kpi .hex { background: transparent; border-color: #c8c8c8; color: #111; }
   body.print-doc-portfolio.print-style-ink .org-fallback { background: #f2f2f2; border-color: #cfcfcf; color: #111; }
   body.print-doc-portfolio.print-style-ink .competency { color: #333; border-bottom-color: #999; }
-  /* Inline-styled colors (level bars, headshot, logos) go monochrome via filter;
-     !important beats the inline style="--cat-color: …" on .skill-cat. */
+  /* filter: grayscale rasterizes everything it touches in the print pipeline —
+     allowed ONLY on true raster images (cost bounded to their own pixels),
+     never on anything containing text or vector fills. The level-bar segs are
+     inline-styled, so !important does the monochrome swap; the ledge follows
+     the --cat-color override (its glow is killed above). */
   body.print-doc-portfolio.print-style-ink .org-logo,
-  body.print-doc-portfolio.print-style-ink .photo-upload img,
-  body.print-doc-portfolio.print-style-ink .level-bar,
-  body.print-doc-portfolio.print-style-ink .skill-cat-header .ledge { filter: grayscale(1); }
+  body.print-doc-portfolio.print-style-ink .photo-upload img { filter: grayscale(1); }
+  body.print-doc-portfolio.print-style-ink .level-bar .seg,
+  body.print-doc-portfolio.print-style-ink .level-bar i { background: #555 !important; }
   body.print-doc-portfolio.print-style-ink .skill-cat-header .ledge { box-shadow: none; }
   body.print-doc-portfolio.print-style-ink .skill-cat { --cat-color: #333 !important; }
+  /* Hardcoded rgba icon accents (contrib type-icons, green check bullets) bypass
+     the token swap — force them monochrome explicitly. */
+  body.print-doc-portfolio.print-style-ink .contrib-head .type-icon { color: #555 !important; }
+  body.print-doc-portfolio.print-style-ink .ach-bullets li > .material-symbols-rounded,
+  body.print-doc-portfolio.print-style-ink .edu-card .ach .material-symbols-rounded { color: #555 !important; }
 
   /* ── PORTFOLIO · SHOWCASE — designer-forward (Behance-inspired): bigger
         display type for the name + section openers, more whitespace, color
@@ -683,6 +727,9 @@ img { display: block; }
   /* Same order as identity — the flexbox DOM-order tie-break keeps the summary
      band right after it, ahead of the elevated projects pane. */
   body.print-doc-portfolio.print-style-showcase .wrap > #summary-band { order: 0; }
+  /* Contents strip rides at the same order — the DOM tie-break keeps it right
+     after the band (or straight after identity when the band is stripped). */
+  body.print-doc-portfolio.print-style-showcase .wrap > .print-toc { order: 0; }
   body.print-doc-portfolio.print-style-showcase .wrap > .section-pane[data-pane="projects"] { order: 1; }
   body.print-doc-portfolio.print-style-showcase .wrap > .footer { order: 3; }
   body.print-doc-portfolio.print-style-showcase { font-size: 11.5px; }
@@ -699,9 +746,11 @@ img { display: block; }
   body.print-doc-portfolio.print-style-showcase .item-head { padding: 16px 18px 16px 21px; }
   body.print-doc-portfolio.print-style-showcase .item-body-inner { padding-bottom: 22px; gap: 16px; }
 
+@media print {
   /* ── RESUME document — swap the portfolio for #resume-view. ── */
   body.print-doc-resume .identity-card,
   body.print-doc-resume #summary-band,
+  body.print-doc-resume .print-toc,
   body.print-doc-resume .section-grid,
   body.print-doc-resume .section-pane,
   body.print-doc-resume .footer { display: none !important; }
@@ -787,8 +836,10 @@ img { display: block; }
 .share-item:hover { background: var(--card-bg-hover); color: var(--text-primary); }
 
 /* ─── Export chooser (modal) ────────────────────────────────────────────
-   Opened by #pdf-btn. Picks document (portfolio | resume) + print style, then
-   sets body.print-doc-<type>.print-style-<style> and calls window.print(). */
+   Opened by #pdf-btn. Picks document (portfolio | resume) + print style —
+   plus, for the portfolio only, a layout (continuous | paginated) — then
+   sets body.print-doc-<type>.print-style-<style> (and enables continuous
+   mode when chosen) and calls window.print(). */
 #export-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
 #export-modal[hidden] { display: none; }
 .export-backdrop { position: absolute; inset: 0; background: rgba(26,22,18,0.45); }
@@ -1751,6 +1802,90 @@ h1.name {
   .item-meta { flex-wrap: wrap; gap: 6px; }
   .item-meta .hex-kpi:nth-child(n+5) { display: none; } /* Drop monitoring kpi on tight screens */
 }
+
+/* ─── Print navigation — contents strip + back-to-top chips ─────────────
+   Hidden on screen (the section tabs do this job interactively); shown in
+   both print layouts. Anchor links survive Chrome's Save-as-PDF as real
+   /Link annotations with /Dest destinations: in the continuous PDF they jump
+   down the single tall page, in paginated they land on the section labels.
+   Chips are border-based on purpose — no background-color reliance — so they
+   survive viewers/printers with "Background graphics" off. Colors ride the
+   tokens, so ink's monochrome palette covers them for free. */
+.print-toc, .backtotop { display: none; }
+.print-toc { margin: 0 0 14px; padding: 10px 14px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-card); }
+.print-toc-title { font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent-orange); margin: 0 0 8px; }
+.print-toc-links { display: flex; flex-wrap: wrap; gap: 7px 18px; }
+.print-toc-links a { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; color: var(--text-primary); font-size: 11px; font-weight: 600; letter-spacing: -0.005em; }
+.toc-chip { display: inline-flex; align-items: center; justify-content: center; padding: 1px 7px; border: 1px solid currentColor; border-radius: var(--radius-pill); font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent-orange); }
+.backtotop { margin: 6px 0 0; padding: 2px 9px; border: 1px solid currentColor; border-radius: var(--radius-pill); font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; }
+@media print {
+  .print-toc { display: block; }
+  .backtotop { display: inline-flex; }
+}
+
+/* ─── Continuous single-page export (Layout: Continuous) ────────────────
+   body.print-continuous is set by the export confirm handler, which then
+   measures document.documentElement.scrollHeight and injects a one-off
+   `@page { size: 816px <H>px; margin: 0 }` as the LAST style in <head> (the
+   only way to win the @page cascade — @page can't be selector-scoped).
+   These rules live OUTSIDE @media print on purpose: the height is measured
+   ON SCREEN, so the measured layout must be EXACTLY the printed layout.
+   They mirror every layout-affecting rule of the base @media print block;
+   !important mirrors the print block and overrides its break-avoid rules at
+   print time. Without the class, printing stays the classic paginated path. */
+body.print-continuous {
+  width: 816px;            /* pin layout width = @page width (8.5in @ 96dpi) */
+  padding: 48px 52px 56px; /* visual margins — @page margin is 0, so they live
+                              on body where scrollHeight captures them */
+  background: #fff;
+  font-size: 11px;
+}
+body.print-continuous .wrap { max-width: none; padding: 0; }
+/* Sample-only chrome: the demo-controls configurator never enters the
+   measured (= printed) layout; the two-column .layout flattens. */
+body.print-continuous .demo-controls { display: none !important; }
+body.print-continuous .layout { display: block; max-width: none; padding: 0; }
+body.print-continuous .topbar,
+body.print-continuous .chevron,
+body.print-continuous #export-modal,
+body.print-continuous #share-menu { display: none !important; }
+body.print-continuous .materialize,
+body.print-continuous .stagger-1,
+body.print-continuous .stagger-2,
+body.print-continuous .stagger-3,
+body.print-continuous .stagger-4 { animation: none !important; opacity: 1 !important; }
+body.print-continuous .section-grid { display: none !important; }
+body.print-continuous .section-pane { display: block !important; animation: none !important; }
+body.print-continuous .section-pane[data-pane]::before {
+  content: attr(data-pane);
+  display: block;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--accent-orange);
+  margin: 14px 0 8px;
+}
+body.print-continuous .section-pane:first-of-type::before { margin-top: 4px; }
+body.print-continuous .item-body { max-height: none !important; overflow: visible !important; }
+body.print-continuous .print-toc { display: block; }
+body.print-continuous .backtotop { display: inline-flex; }
+/* One tall page = zero fragmentation: neutralize every break rule the base
+   print stylesheet sets, so nothing reserves space it doesn't need. */
+body.print-continuous *, body.print-continuous *::before, body.print-continuous *::after {
+  break-inside: auto !important; break-before: auto !important; break-after: auto !important;
+  page-break-inside: auto !important; page-break-before: auto !important; page-break-after: auto !important;
+}
+/* A narrow browser window must not leak the mobile layout into the measured
+   geometry — restore the desktop values the 816px page actually prints with
+   (these out-specificity the @media (max-width: 640px) single-class rules). */
+body.print-continuous .identity-card { padding: 22px 24px; }
+body.print-continuous .identity-row { flex-direction: row; align-items: flex-start; gap: 18px; }
+body.print-continuous .photo-upload { width: 104px; height: 104px; }
+body.print-continuous .identity-top { flex-direction: row; align-items: flex-start; gap: 10px; }
+body.print-continuous h1.name { font-size: 22px; }
+body.print-continuous .summary-band { padding: 16px 24px 18px; }
+body.print-continuous .summary-stats { gap: 14px 28px; }
+body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
+body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex; }
 </style>
 </head>
 <body>
@@ -1894,7 +2029,7 @@ h1.name {
     <button class="dc-reset" type="button" id="ctrl-reset">Reset to defaults</button>
   </aside>
 
-<div class="wrap">
+<div class="wrap" id="top">
 
   <!-- TOP BAR -->
   <div class="topbar materialize">
@@ -2192,6 +2327,23 @@ h1.name {
     </div>
   </section>
 
+  <!-- PRINT CONTENTS (print/PDF only) ============================== -->
+  <!-- Never visible on screen — the section tabs do this job interactively.
+       In the PDF the anchors become real link annotations: on the continuous
+       single page they jump down the page; in paginated they land on the
+       section labels. Static 01–05 chips, border-styled so they survive
+       viewers that skip background graphics. -->
+  <nav class="print-toc" aria-hidden="true">
+    <div class="print-toc-title">Contents</div>
+    <div class="print-toc-links">
+      <a href="#pane-experience"><span class="toc-chip">01</span>Experience</a>
+      <a href="#pane-skills"><span class="toc-chip">02</span>Skills</a>
+      <a href="#pane-education"><span class="toc-chip">03</span>Education</a>
+      <a href="#pane-certifications"><span class="toc-chip">04</span>Certifications</a>
+      <a href="#pane-projects"><span class="toc-chip">05</span>Projects</a>
+    </div>
+  </nav>
+
   <!-- SECTION TABS -->
   <div class="section-grid materialize stagger-2">
     <button class="section-btn active" data-section="experience" style="--conf-color: var(--accent-emerald)" type="button">
@@ -2262,7 +2414,7 @@ h1.name {
   </div>
 
   <!-- ────────────  EXPERIENCE PANE  ──────────── -->
-  <div class="section-pane active" data-pane="experience">
+  <div class="section-pane active" data-pane="experience" id="pane-experience">
 
     <!-- ─────  FIGMA — current, expanded by default. 1 IC + 1 Lead + 2 metrics (increase + achieved)  ───── -->
     <div data-persona="jane" class="item-card is-current expanded" data-expand data-role-index="0" data-industry="saas" data-start-year="2022">
@@ -3562,6 +3714,7 @@ h1.name {
       </div>
     </div>
 
+    <a class="backtotop" href="#top" aria-hidden="true">↑ Contents</a>
   </div>
 
   <!-- ────────────  SKILLS PANE  ──────────── -->
@@ -3569,7 +3722,7 @@ h1.name {
        expert (4 lit, cyan #22D3EE) · advanced (3 lit, emerald #16A34A) ·
        proficient (2 lit, amber #F59E0B) · beginner (1 lit, violet #A78BFA)
   -->
-  <div class="section-pane" data-pane="skills">
+  <div class="section-pane" data-pane="skills" id="pane-skills">
     <div class="skills-hud">
 
       <!-- DOMAIN — indigo (#818CF8) · 16 skills -->
@@ -4167,13 +4320,14 @@ h1.name {
       </div>
 
     </div>
+    <a class="backtotop" href="#top" aria-hidden="true">↑ Contents</a>
   </div>
 
   <!-- ────────────  EDUCATION PANE  ──────────── -->
   <!-- Edu cards now support: status pill, achievements (bulleted), skill chips,
        optional metric badge, scope/domain badges. Same expressive surface as
        contribution cards — anyone with academic depth can showcase it. -->
-  <div class="section-pane" data-pane="education">
+  <div class="section-pane" data-pane="education" id="pane-education">
     <div class="edu-list">
 
       <!-- RISD BFA — rich entry with honors metric, bullets, skill chips -->
@@ -4417,13 +4571,14 @@ h1.name {
       </div>
 
     </div>
+    <a class="backtotop" href="#top" aria-hidden="true">↑ Contents</a>
   </div>
 
   <!-- ────────────  CERTIFICATIONS PANE  ──────────── -->
   <!-- 5 certs covering: rich entry with bullets + skills, plain dated, plain dated,
        no-date (amber pill), and an expired-but-renewed credential.
        Same expressive surface as Education — anyone with credential depth can showcase it. -->
-  <div class="section-pane" data-pane="certifications">
+  <div class="section-pane" data-pane="certifications" id="pane-certifications">
     <div class="edu-list">
 
       <!-- Cooper Design Leadership — rich entry -->
@@ -4679,6 +4834,7 @@ h1.name {
       </div>
 
     </div>
+    <a class="backtotop" href="#top" aria-hidden="true">↑ Contents</a>
   </div>
 
   <!-- ────────────  PROJECTS PANE — rich .item-card list  ──────────── -->
@@ -4687,7 +4843,7 @@ h1.name {
        metric badge, action description, achievement bullets, skill chips.
        This is the schema-level claim: anyone can showcase any timeline-of-work
        with full depth — research projects, open source, community work, etc. -->
-  <div class="section-pane" data-pane="projects">
+  <div class="section-pane" data-pane="projects" id="pane-projects">
 
     <!-- TYPEBOOK — published book, expanded by default to showcase the rich card -->
     <div data-persona="jane" class="item-card project expanded" data-expand data-proj-index="0">
@@ -5702,6 +5858,7 @@ h1.name {
       </div>
     </div>
 
+    <a class="backtotop" href="#top" aria-hidden="true">↑ Contents</a>
   </div>
 
   <!-- RESUME VIEW (print-only) ===================================== -->
@@ -5821,9 +5978,10 @@ h1.name {
 </div><!-- /.layout -->
 
 <!-- EXPORT CHOOSER (modal) ========================================= -->
-<!-- Opened by #pdf-btn. Self-contained: picks document + style, sets
-     body.print-doc-<type>.print-style-<style>, closes, calls window.print().
-     Last choice persists in localStorage ('hope-export-pref'). -->
+<!-- Opened by #pdf-btn. Self-contained: picks document + style (+ layout for
+     the portfolio: continuous one-page PDF, the default, or paginated Letter),
+     sets body.print-doc-<type>.print-style-<style>, closes, calls
+     window.print(). Last choice persists in localStorage ('hope-export-pref'). -->
 <div id="export-modal" hidden role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
   <div class="export-backdrop" data-export-close></div>
   <div class="export-dialog">
@@ -5883,6 +6041,23 @@ h1.name {
           <input type="radio" name="export-style-resume" value="compact" />
           <span class="opt-name">Compact</span>
           <span class="opt-desc">Dense one-pager that fits the most onto a single page.</span>
+        </label>
+      </div>
+    </fieldset>
+    <!-- Layout applies to the portfolio document only; the resume is always
+         paginated US Letter (the ATS-safe shape recruiters expect). -->
+    <fieldset class="export-group" id="export-layout-portfolio">
+      <legend class="export-group-label">Layout</legend>
+      <div class="export-opts export-opts-2">
+        <label class="export-opt">
+          <input type="radio" name="export-layout-portfolio" value="continuous" checked />
+          <span class="opt-name">Continuous<span class="opt-tag">Recommended</span></span>
+          <span class="opt-desc">One tall page — looks exactly like the page.</span>
+        </label>
+        <label class="export-opt">
+          <input type="radio" name="export-layout-portfolio" value="paginated" />
+          <span class="opt-name">Paginated</span>
+          <span class="opt-desc">US Letter pages — for printing on paper.</span>
         </label>
       </div>
     </fieldset>
@@ -6021,12 +6196,17 @@ h1.name {
   // body.print-doc-<type> + .print-style-<style>, closes the modal and
   // calls window.print(); 'afterprint' removes the classes. The last choice
   // persists in localStorage ('hope-export-pref') and is preselected next time.
+  // The portfolio document adds a Layout choice: 'continuous' (default — one
+  // tall page sized to the content, looks exactly like the screen) or
+  // 'paginated' (US Letter pages, for printing on paper). The resume is
+  // always paginated Letter.
   var pdfBtn = document.getElementById('pdf-btn');
   var exportModal = document.getElementById('export-modal');
   var EXPORT_PREF_KEY = 'hope-export-pref';
   var EXPORT_STYLES = { portfolio: ['classic', 'ink', 'showcase'], resume: ['classic', 'modern', 'compact'] };
+  var EXPORT_LAYOUTS = ['continuous', 'paginated'];
   var readExportPref = function () {
-    var pref = { doc: 'portfolio', style: 'classic' };
+    var pref = { doc: 'portfolio', style: 'classic', layout: 'continuous' };
     try {
       var raw = localStorage.getItem(EXPORT_PREF_KEY);
       if (raw) {
@@ -6034,10 +6214,41 @@ h1.name {
         if (p && EXPORT_STYLES[p.doc]) {
           pref.doc = p.doc;
           if (EXPORT_STYLES[p.doc].indexOf(p.style) !== -1) pref.style = p.style;
+          if (EXPORT_LAYOUTS.indexOf(p.layout) !== -1) pref.layout = p.layout;
         }
       }
     } catch (e) {}
     return pref;
+  };
+  // Continuous single-page export. The @page rule cannot be selector-scoped,
+  // so it is injected as the LAST style in <head> (wins the @page cascade over
+  // the base Letter rule) sized to the measured document height. The height is
+  // measured ON SCREEN under body.print-continuous — its rules live outside
+  // @media print so the measured layout IS the printed layout — at the exact
+  // print width (816px = 8.5in @ 96dpi; px only: exact 0.75 px→pt). +1px
+  // absorbs fractional rounding; the 19200px cap (200in) is Acrobat's MediaBox
+  // ceiling — past it Chrome flows the remainder onto N continuous pages.
+  // enable() is idempotent: it clears stale state first, so a killed print
+  // dialog (afterprint never fired) can't leak into the next export.
+  var CONT_PAGE_W_PX = 816;
+  var CONT_MAX_H_PX = 19200;
+  var disableContinuousPrint = function () {
+    document.body.classList.remove('print-continuous');
+    document.body.style.width = '';
+    var stale = document.getElementById('continuous-page');
+    if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+  };
+  var enableContinuousPrint = function () {
+    disableContinuousPrint();
+    document.body.classList.add('print-continuous');
+    document.body.style.width = CONT_PAGE_W_PX + 'px'; // measure at print width
+    void document.body.offsetHeight;                   // force reflow before measuring
+    var h = Math.ceil(document.documentElement.scrollHeight) + 1;
+    if (h > CONT_MAX_H_PX) h = CONT_MAX_H_PX;
+    var pageStyle = document.createElement('style');
+    pageStyle.id = 'continuous-page';
+    pageStyle.textContent = '@page { size: ' + CONT_PAGE_W_PX + 'px ' + h + 'px; margin: 0; }';
+    document.head.appendChild(pageStyle);
   };
   var checkedValue = function (name) {
     var el = exportModal ? exportModal.querySelector('input[name="' + name + '"]:checked') : null;
@@ -6047,6 +6258,8 @@ h1.name {
     var doc = checkedValue('export-doc') || 'portfolio';
     document.getElementById('export-styles-portfolio').hidden = doc !== 'portfolio';
     document.getElementById('export-styles-resume').hidden = doc !== 'resume';
+    // Layout is a portfolio-only dimension — the resume is always paginated Letter.
+    document.getElementById('export-layout-portfolio').hidden = doc !== 'portfolio';
     exportModal.querySelectorAll('.export-opt').forEach(function (opt) {
       var input = opt.querySelector('input');
       opt.classList.toggle('selected', !!(input && input.checked));
@@ -6060,6 +6273,8 @@ h1.name {
       if (docRadio) docRadio.checked = true;
       var styleRadio = exportModal.querySelector('input[name="export-style-' + pref.doc + '"][value="' + pref.style + '"]');
       if (styleRadio) styleRadio.checked = true;
+      var layoutRadio = exportModal.querySelector('input[name="export-layout-portfolio"][value="' + pref.layout + '"]');
+      if (layoutRadio) layoutRadio.checked = true;
       syncExportUI();
       exportModal.hidden = false;
     });
@@ -6070,9 +6285,17 @@ h1.name {
     document.getElementById('export-confirm').addEventListener('click', function () {
       var doc = checkedValue('export-doc') || 'portfolio';
       var style = checkedValue('export-style-' + doc) || 'classic';
-      try { localStorage.setItem(EXPORT_PREF_KEY, JSON.stringify({ doc: doc, style: style })); } catch (e) {}
+      var layout = doc === 'portfolio' ? (checkedValue('export-layout-portfolio') || 'continuous') : 'paginated';
+      // Resume is always paginated, but that's forced — don't let it overwrite
+      // the user's saved PORTFOLIO layout choice (continuous by default).
+      var persistLayout = doc === 'portfolio' ? layout : readExportPref().layout;
+      try { localStorage.setItem(EXPORT_PREF_KEY, JSON.stringify({ doc: doc, style: style, layout: persistLayout })); } catch (e) {}
       document.body.classList.add('print-doc-' + doc, 'print-style-' + style);
       closeExportModal();
+      // Continuous applies to the portfolio document only. Without it the
+      // default print path stays the classic paginated Letter stylesheet —
+      // also the fail-soft for engines that ignore the injected @page size.
+      if (doc === 'portfolio' && layout === 'continuous') enableContinuousPrint();
       window.print();
     });
     window.addEventListener('afterprint', function () {
@@ -6081,6 +6304,7 @@ h1.name {
         if (c.indexOf('print-doc-') === 0 || c.indexOf('print-style-') === 0) stale.push(c);
       });
       stale.forEach(function (c) { document.body.classList.remove(c); });
+      disableContinuousPrint();
     });
   }
   document.addEventListener('keydown', function (e) {
