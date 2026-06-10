@@ -36,7 +36,7 @@ cat "$PLUGIN_ROOT/references/milestones.md"
 
 ## What this skill outputs
 
-A **single self-contained HTML file** at `career-graph/documents/portfolios/portfolio-<slug>-<date>.html`. The HTML uses Hope's design tokens — light by default (warm cream + orange), with a dark theme via the toggle and the same layout across both — embeds all CSS inline, generates inline SVG for any graphics, and works opened in any browser with no network connection required.
+A **single self-contained HTML file** at `career-graph/documents/portfolios/portfolio-<slug>-<date>.html`, plus two **share-card pages** (`share-card.html` and `share-card-square.html`) in the same folder — see "Share cards & link-preview meta" below. The HTML uses Hope's design tokens — light by default (warm cream + orange), with a dark theme via the toggle and the same layout across both — embeds all CSS inline, generates inline SVG for any graphics, and works opened in any browser with no network connection required.
 
 **What goes inside:**
 
@@ -48,6 +48,8 @@ A **single self-contained HTML file** at `career-graph/documents/portfolios/port
 - **Education / Certifications** — short, factual.
 - **Contact** — email and LinkedIn, nothing more. Optional.
 - **Theme toggle** — sun/moon button in the top-right; switches light/dark, layout unchanged.
+- **Hidden résumé view** — `#resume-view`, invisible on screen, populated at generation time for the résumé print path (see "Resume view — substitution contract" below).
+- **Export & share controls** — the template's **Save as PDF** button opens a document+style chooser (`#export-modal`), and **Share** opens a Copy link / LinkedIn / X / WhatsApp / Email menu (`#share-menu`). These ship in the template; your job is the content they depend on (resume view, OG meta, share cards).
 
 ## How to choose what goes in
 
@@ -121,6 +123,23 @@ The Projects pane uses the **same collapsible `.item-card` structure as Experien
 
 Mark the **first** project card `expanded` (so the pane opens populated). The card reuses Experience's `.item-card[data-expand] .item-head` markup verbatim, so the card-expand JS and the section-grid "Projects" filter work on project cards with no extra wiring. There is **no** project tile, hero gradient, or metric tag — those were removed.
 
+### Resume view — substitution contract
+
+The template carries `<div id="resume-view" hidden>` as a **sibling of the portfolio content inside `.wrap`**. On screen it never renders (`#resume-view{display:none}`); it exists solely for the print path — when the user picks **Resume** in the export chooser, `body.print-doc-resume` hides the portfolio panes and shows this view instead. **Populate it on every generation.** An empty resume view passes a visual check (it's hidden) but silently prints a blank résumé.
+
+Substitute, from the graph:
+
+| Placeholder | Content |
+|---|---|
+| `{{name}}` / `{{headline}}` | Same values as the identity card. |
+| `{{resume_contact_line}}` | Plain text: `location · email · linkedin · site` — include only the fields the user actually has, joined with ` · `. No links-as-icons, no markup tricks. |
+| `{{resume_summary}}` | 2–3 tight sentences from the graph. Résumé register — factual and scannable, not Hope's designerly portfolio voice. |
+| `<!-- HOPE:resume_experience_loop_start/end -->` | One block per role: title, company, dates, and **2–4 achievement bullets led by metrics** pulled from the role's contributions ("Cut onboarding from 3 weeks to 1 by …" — number first, mechanism second). Bullets use the inner loop `<!-- HOPE:resume_bullets_loop --> … <!-- /HOPE:resume_bullets_loop -->`, one `<li>{{resume_bullet}}</li>` per achievement. |
+| `<!-- HOPE:resume_education_loop_start/end -->` | One block per education/certification entry: institution, credential, year. |
+| `<!-- HOPE:resume_skills_line -->` | Top **10–14 skills, comma-joined**, strongest-evidenced and most market-demanded first. |
+
+**ATS rules — non-negotiable inside `#resume-view`:** real text only, standard section headings (Experience, Education, Skills), semantic markup — real `<h1>`/`<h2>` and `<ul><li>` — **no tables, no images or icons, no icon fonts, no text rendered as graphics.** Recruiters' parsers must be able to read every word.
+
 ## Bake the headshot into the file (do this at generation time)
 
 The published portfolio must **already contain the user's photo**. The template still ships a client-side upload widget, but that only lives in *this* browser's `localStorage` — it never reaches the published file, so a published site with no baked-in photo shows an empty upload box to recruiters. Fix that by embedding the photo as a `data:` URL when you generate the HTML.
@@ -165,9 +184,25 @@ printf 'data:image/jpeg;base64,%s' "$(base64 < "$OUT" | tr -d '\n')"
 
 Either way the localStorage "change your photo" widget stays in the file as a fallback the user can use after publishing.
 
-**Before saving the user's file, clean the output:**
+**Before saving the user's files, clean and verify the output:**
 - **Strip the template-authoring comment** — the `<!-- Hope portfolio template · v0.4 … See skills/portfolio/SKILL.md for the substitution contract -->` block. It documents the template for *you*; it must not ship in the user's portfolio (it also contains a literal `{{single_tokens}}` that fails a "no unsubstituted tokens" check). Keep the disclosed provenance comments (share-url, generator) — those are intentional.
-- **Verify zero unsubstituted placeholders remain** — grep the output for `{{` and `<!-- HOPE:`. If any survive, the substitution is incomplete; fix before saving. Never hand the user a file with raw template tokens.
+- **"Generated" means all of it** — the portfolio HTML with a **populated `#resume-view`**, plus **`share-card.html` and `share-card-square.html`** next to it (see "Share cards & link-preview meta"). A run that produces only the portfolio file is incomplete.
+- **Verify zero unsubstituted placeholders remain** — grep **every generated file** (the portfolio AND both share cards) for `{{` and `<!-- HOPE:`. This explicitly includes the newer tokens — `{{og_description}}`, `{{resume_contact_line}}`, `{{resume_summary}}`, and the `resume_*` loop blocks — because an unpopulated resume view is invisible on screen and only fails when the user prints a résumé. If any survive, the substitution is incomplete; fix before saving. Never hand the user a file with raw template tokens.
+
+## Share cards & link-preview meta (generate alongside the portfolio)
+
+A bare URL pasted into LinkedIn/X/WhatsApp unfurls as a rich card only when the page's OG meta points at a real image. **You make the content and the image sources; the publish skill stamps URLs and takes the screenshots.** Division of labor:
+
+**1 — `{{og_description}}`.** The template's `og:description` / `twitter:description` carry this token. Write a **1–2 sentence third-person hook** distilled from the summary — recruiter-facing, specific, no hype. ("Product designer who unified Figma's design system across twelve teams" — not "Visionary design leader passionate about impact.") Also substitute the OG/Twitter title tokens (`{{name}} — {{headline}}`). **Leave `og:url`, `og:image`, and `twitter:image` with `content=""` exactly as the template ships them** — the publish skill stamps absolute URLs once it knows `SITE_URL`.
+
+**2 — Generate two share-card pages next to the portfolio** (same folder, exactly these names — the publish skill looks for them):
+
+- `share-card.html` — fixed **1200×630** (the OG link-preview size).
+- `share-card-square.html` — fixed **1080×1080** (IG / WhatsApp avatar variant).
+
+Both are self-contained HTML styled with **Hope's design tokens**, containing: the **baked headshot** if you have one (reuse the same `data:` URL as the portfolio), the user's **name**, **headline**, up to **3 hero metric badges** (the strongest numbers from the graph), and the **live URL in mono at the bottom**. The real URL is stamped at publish time — showing the expected URL is fine. The body is locked to the pixel size with `overflow: hidden` and **no scrollbars**: the publish skill screenshots these pages 1:1 with headless Chrome into `og-image.png` / `og-image-square.png`, so a stray scrollbar or overflowing element ships straight into the recruiter's link preview.
+
+You do **not** take the screenshots — that's the publish skill's step (it needs `SITE_URL` first, and it degrades gracefully if Chrome is missing). Your job ends at two pixel-exact HTML files that render correctly at their fixed sizes.
 
 ## Provenance & attribution
 
@@ -224,7 +259,7 @@ The portfolio is the payoff. Don't just save a file and move on — **present it
    ```
 
    Use `/usr/bin/python3` (the system interpreter), not a bare `python`/`python3` that may be a pyenv shim. Pin `--directory` to the absolute temp path. Never serve from the user's project folder under `~/Documents`.
-5. **Point out Share & Save as PDF.** The portfolio carries a **Share** button (copies the live link — active once published) and a **Save as PDF** button (opens the browser's print dialog → "Save as PDF"). Name them so the user knows they're there.
+5. **Point out Share & Save as PDF.** The portfolio carries a **Share** button that opens a small share menu — **Copy link · LinkedIn · X · WhatsApp · Email** (the social links go live once published; Copy keeps its "Copied!" feedback) — and a **Save as PDF** button that now opens an **export chooser** first: pick the document (**portfolio or résumé**) and a style (portfolio: classic / ink / showcase · résumé: classic / modern / compact), then it prints. Tell the user plainly: "Save as PDF now asks portfolio-or-résumé and a style — the résumé styles print an ATS-clean document from this same file, no separate résumé needed." Your last choice is remembered for next time. Name both buttons so the user knows they're there.
 
 ## Hand-off — recommend publishing, and own the setup
 

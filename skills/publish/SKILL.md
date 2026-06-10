@@ -36,7 +36,7 @@ Read `$PLUGIN_ROOT/references/computer-use-guardrails.md` first. Publishing crea
 ## HARD GUARDRAILS (these protect the user — never bypass)
 
 1. **One simple confirm before going public.** Never run a deploy / `gh repo create` until the user has said yes to a plain-English "this will be public, ok?" (step 5). Public is irreversible in spirit — recruiters and crawlers cache it instantly. This is the one question you always ask.
-2. **Publish an allowlist, never a folder.** Copy **only** the built portfolio HTML + its assets to a clean staging dir. `career.json`, notes, drafts, and the rest of the job-hunt folder **never** leave the machine.
+2. **Publish an allowlist, never a folder.** Copy **only** the built portfolio HTML + its assets to a clean staging dir — plus, in step 6c, **exactly two** generated share images (`og-image.png`, `og-image-square.png`). `career.json`, notes, drafts, the `share-card*.html` sources, and the rest of the job-hunt folder **never** leave the machine.
 3. **Scan before you push.** Grep the staging dir for secret shapes before any deploy. Contact info in a portfolio is intentional — don't block on it.
 4. **Set up *with* them, never *as* them.** If GitHub isn't ready, guide them through it warmly — they click the browser login; you can't and don't run `gh auth login` for them. Never silently auto-install global tools. And never cold-halt with a wall of commands — walk them through it like a patient friend, one step at a time.
 
@@ -61,7 +61,7 @@ Find the generated file (default `career-graph/documents/portfolios/portfolio-*.
 Create `site/` and copy **only** the portfolio HTML (as `index.html`) + any local assets it references. Exclude `career.json`, notes, drafts. Hope portfolios are self-contained, so this is usually one copy.
 
 ### 3. Pre-flight — re-publish check, then setup
-- If `.publish.json` exists → **re-publish**: reuse the recorded repo/URL, re-stamp the share link (step 6), then take step 7's re-publish path.
+- If `.publish.json` exists → **re-publish**: reuse the recorded repo/URL, re-run step 6 (share-link + link-preview stamps, share images), then take step 7's re-publish path.
 - Else (first publish): quietly check for `git`, `gh`, and `gh auth status`.
   - **All present** → say it simply ("Setup's good — I can put this online for you"), then scan + confirm.
   - **Something missing** → **Setup help** (below). Guide, don't dump.
@@ -102,8 +102,9 @@ Not a technical card. A human sentence. Wait for yes:
 
 That's the whole gate. No repo jargon, no file list unless they ask.
 
-### 6. Stamp the share link into the page (do this *before* any push)
-The portfolio carries an empty placeholder in its `<head>` (note it's self-closing):
+### 6. Stamp the live URL + build the share images (all of this *before* any push)
+
+**a) The share link.** The portfolio carries an empty placeholder in its `<head>` (note it's self-closing):
 ```html
 <meta name="hope:share-url" content="" />
 ```
@@ -121,7 +122,39 @@ The live URL is the **SITE_URL** you computed in step 3b (root for a user site, 
    sed -i '' -E 's|(<meta name="hope:share-url" content=")[^"]*(")|\1<SITE_URL>\2|' "<the-portfolio-file-from-step-1>"
    ```
 
-Confirm the replace landed (`grep hope:share-url site/index.html` should show the URL) before pushing. On **re-publish**, re-stamp both anyway — the URL is the same, but this self-heals any copy that was generated before the page first went live.
+**b) The link-preview tags (`og:url`, `og:image`, `twitter:image`).** The same `<head>` carries empty Open Graph / Twitter placeholders — these are what make the link unfurl as a rich card when pasted on LinkedIn / X / WhatsApp, and the crawlers require **absolute** `https://` URLs (relative paths silently fail). Derive them from **SITE_URL** — it always ends in `/`, so plain concatenation works: `og:image` = `<SITE_URL>og-image.png`. Use the **same self-closing-safe sed pattern** as the share-url stamp — the closing capture is `(")`, never `(">)`:
+
+```bash
+# Note: og tags use property=, twitter tags use name=.
+# og:url — always stamp:
+sed -i '' -E 's|(<meta property="og:url" content=")[^"]*(")|\1<SITE_URL>\2|' site/index.html
+# og:image + twitter:image — stamp ONLY if og-image.png actually landed in site/ (see c):
+sed -i '' -E 's|(<meta property="og:image" content=")[^"]*(")|\1<SITE_URL>og-image.png\2|' site/index.html
+sed -i '' -E 's|(<meta name="twitter:image" content=")[^"]*(")|\1<SITE_URL>og-image.png\2|' site/index.html
+```
+
+If the image couldn't be generated (no Chrome — see c), leave `og:image` / `twitter:image` as empty `content=""`: scrapers ignore an empty tag, but a stamped URL that 404s can break the whole preview. Stamp the same tags into the user's **local saved copy** too — same single-file rule as in (a): the exact path from step 1, never a `portfolio-*.html` glob.
+
+**c) The share-card images (headless Chrome).** The portfolio skill leaves `share-card.html` (a fixed 1200×630 card) and `share-card-square.html` (1080×1080) **next to the portfolio file**. If `share-card.html` exists there AND Chrome exists at the path below, screenshot them straight into the staging dir:
+
+```bash
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+if [ -x "$CHROME" ] && [ -f "<portfolio-dir>/share-card.html" ]; then
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=2000 \
+    --screenshot="$PWD/site/og-image.png" --window-size=1200,630 \
+    "file://<portfolio-dir>/share-card.html"
+  [ -f "<portfolio-dir>/share-card-square.html" ] && \
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=2000 \
+    --screenshot="$PWD/site/og-image-square.png" --window-size=1080,1080 \
+    "file://<portfolio-dir>/share-card-square.html"
+fi
+```
+
+Use **absolute paths** for both `--screenshot` and the `file://` URL — Chrome resolves relative paths against its own cwd. **If Chrome is missing, skip this gracefully** — the publish still succeeds. Tell the user plainly: "Your link will work everywhere — it just won't show a picture preview when pasted, because Chrome isn't installed here to make one." Don't install Chrome for them, don't block, and leave `og:image`/`twitter:image` unstamped per (b).
+
+**d) The allowlist grows by exactly two files: `og-image.png` and `og-image-square.png`.** Nothing else new enters `site/`. The `share-card.html` / `share-card-square.html` sources stay local — only their screenshots ship — and, as always, `career.json`, notes, drafts, and everything else in the job-hunt folder **never** leave the machine.
+
+Confirm the stamps landed before pushing — `grep -E 'hope:share-url|og:url|og:image' site/index.html` should show the live URL(s), with no leftover empty `content=""` on any tag you stamped. On **re-publish**, re-run this whole step anyway — the URLs are the same, but it self-heals copies generated before the page first went live and re-screenshots a share card that may have changed since last time.
 
 ### 7. Execute (run it; narrate in plain words)
 Say what's happening simply — "Putting it online…", "Setting up the page…", "Almost there — the web address is waking up." Run:
@@ -156,6 +189,8 @@ Same repo, same URL — never a second site for the same portfolio. Pages rebuil
 
 ### 8. Return the URL
 Plainly and warmly: "Done — your portfolio is live at **<url>**. Copy it into any application. It can take a minute to appear the first time." Offer to open it for them. The page's own **Share** button now copies this exact link too.
+
+If the share images shipped (step 6c), add — plainly: "Paste this link on LinkedIn and it shows your share card. og-image-square.png is yours to attach to posts." (The square image lives in `site/` and at `<SITE_URL>og-image-square.png`.) If they later say the LinkedIn preview looks stale or missing, point them to LinkedIn's **Post Inspector** — https://www.linkedin.com/post-inspector/ — paste the link there and hit Inspect to force a fresh scrape; LinkedIn caches previews for about a week, and posts already published keep their old card. If the images were skipped (no Chrome), don't promise a card — the link still works everywhere, just without the picture preview.
 
 ### 9. Custom domain (only if they ask)
 If they raise their own domain: write a `CNAME` file (commit, push) and **print** the exact DNS records to add at their registrar (`CNAME` `www` → `<owner>.github.io`, or apex `A` records per GitHub's IPs). You never edit their DNS — print the records, let them add them.

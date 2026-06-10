@@ -9,6 +9,21 @@
      final deploy push, so the Share button copies the canonical published link.
      Opened locally before publish, the button falls back to window.location.href. -->
 <meta name="hope:share-url" content="" />
+<!-- OG / link-preview meta — how this link unfurls rich on LinkedIn / X / WhatsApp.
+     og:url, og:image and twitter:image ship empty; the publish skill stamps them with
+     ABSOLUTE URLs (SITE_URL and SITE_URL + og-image.png) before the final deploy push.
+     The 1200×630 og-image.png is screenshotted from the skill-generated share-card.html. -->
+<meta property="og:type" content="profile" />
+<meta property="og:title" content="{{name}} — {{headline}}" />
+<meta property="og:description" content="{{og_description}}" />
+<meta property="og:url" content="" />
+<meta property="og:image" content="" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{name}} — {{headline}}" />
+<meta name="twitter:description" content="{{og_description}}" />
+<meta name="twitter:image" content="" />
 <!-- Provenance (disclosed, not hidden): a standards-based generator tag + a
      schema.org ProfilePage so recruiters/crawlers can read who made this and with what.
      This is the user's file under MIT — see the footer note; it's theirs to keep or remove. -->
@@ -157,6 +172,161 @@ img { display: block; }
   .item-card, .contrib-group { box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   p { orphans: 3; widows: 3; }
   .footer { break-before: avoid; page-break-before: avoid; }
+}
+
+/* ─── Export chooser print styles ──────────────────────────────────────
+   The tuned block above IS "portfolio classic" — the default look when no
+   print-doc-… / print-style-… class is on <body>, and the foundation every
+   variant builds on. Everything below is scoped to the body classes that
+   #export-modal sets right before window.print() (removed on afterprint):
+     body.print-doc-portfolio + .print-style-classic | -ink | -showcase
+     body.print-doc-resume    + .print-style-classic | -modern | -compact
+   print-doc-portfolio.print-style-classic intentionally has no rules — it
+   IS the foundation. */
+@media print {
+  /* In-page chrome never prints, whichever document was chosen. */
+  #export-modal, #share-menu { display: none !important; }
+
+  /* ── PORTFOLIO · INK — conservative monochrome for corporate submissions.
+        White bg, near-black text, no textures/scanlines/grid, no color
+        accents; rules, weight and spacing carry the hierarchy. ── */
+  body.print-doc-portfolio.print-style-ink {
+    --bg: #fff; --surface: #fff; --surface-2: #fff;
+    --card-bg: #fff; --card-bg-hover: #fff; --card-bg-active: #fff;
+    --text-primary: #111; --text-secondary: #333; --text-muted: #555; --text-dim: #888;
+    --accent-orange: #111; --accent-orange-hover: #111; --accent-orange-bg: transparent; --accent-orange-glow: none;
+    --accent-cyan: #111; --accent-cyan-soft: transparent; --accent-cyan-edge: #c8c8c8;
+    --accent-emerald: #111; --accent-emerald-bg: transparent; --accent-emerald-edge: #c8c8c8; --accent-emerald-glow: none;
+    --accent-violet: #111; --accent-violet-bg: transparent; --accent-violet-edge: #c8c8c8;
+    --accent-amber: #555; --accent-amber-bg: transparent; --accent-amber-edge: #c8c8c8;
+    --accent-rose: #111;
+    --border-default: #cfcfcf; --border-subtle: #e4e4e4; --border-hover: #aaa;
+    --shadow-sm: none; --shadow-md: none;
+    --grid-line: transparent; --scan-line: transparent;
+  }
+  body.print-doc-portfolio.print-style-ink .identity-card::before,
+  body.print-doc-portfolio.print-style-ink .item-card::before { display: none !important; }
+  body.print-doc-portfolio.print-style-ink .item-card.is-current .accent-bar { background: linear-gradient(180deg, #111, #111 60%, transparent); box-shadow: none; }
+  body.print-doc-portfolio.print-style-ink .live-pill,
+  body.print-doc-portfolio.print-style-ink .active-pill { background: transparent; border-color: #c8c8c8; color: #111; box-shadow: none; }
+  body.print-doc-portfolio.print-style-ink .live-pill .dot { background: #111; animation: none; }
+  body.print-doc-portfolio.print-style-ink .metric-badge { box-shadow: none; }
+  body.print-doc-portfolio.print-style-ink .skill-chip { background: transparent !important; color: #111 !important; border-color: #c8c8c8 !important; }
+  body.print-doc-portfolio.print-style-ink .contrib { border-left-color: #111; }
+  body.print-doc-portfolio.print-style-ink .contrib-impact p { color: #333 !important; }
+  body.print-doc-portfolio.print-style-ink .contrib-impact .material-symbols-rounded { color: #555 !important; }
+  body.print-doc-portfolio.print-style-ink .group-header .material-symbols-rounded,
+  body.print-doc-portfolio.print-style-ink .group-header .title { color: #333 !important; }
+  body.print-doc-portfolio.print-style-ink .group-header .bar { background: #d8d8d8 !important; }
+  body.print-doc-portfolio.print-style-ink .hex-kpi .hex { background: transparent; border-color: #c8c8c8; color: #111; }
+  body.print-doc-portfolio.print-style-ink .org-fallback { background: #f2f2f2; border-color: #cfcfcf; color: #111; }
+  body.print-doc-portfolio.print-style-ink .competency { color: #333; border-bottom-color: #999; }
+  /* Inline-styled colors (level bars, headshot, logos) go monochrome via filter;
+     !important beats the inline style="--cat-color: …" on .skill-cat. */
+  body.print-doc-portfolio.print-style-ink .org-logo,
+  body.print-doc-portfolio.print-style-ink .photo-upload img,
+  body.print-doc-portfolio.print-style-ink .level-bar,
+  body.print-doc-portfolio.print-style-ink .skill-cat-header .ledge { filter: grayscale(1); }
+  body.print-doc-portfolio.print-style-ink .skill-cat-header .ledge { box-shadow: none; }
+  body.print-doc-portfolio.print-style-ink .skill-cat { --cat-color: #333 !important; }
+
+  /* ── PORTFOLIO · SHOWCASE — designer-forward (Behance-inspired): bigger
+        display type for the name + section openers, more whitespace, color
+        kept, projects elevated to print FIRST after identity (CSS order). ── */
+  body.print-doc-portfolio.print-style-showcase .wrap { display: flex; flex-direction: column; }
+  body.print-doc-portfolio.print-style-showcase .wrap > * { order: 2; }
+  body.print-doc-portfolio.print-style-showcase .wrap > .identity-card { order: 0; }
+  body.print-doc-portfolio.print-style-showcase .wrap > .section-pane[data-pane="projects"] { order: 1; }
+  body.print-doc-portfolio.print-style-showcase .wrap > .footer { order: 3; }
+  body.print-doc-portfolio.print-style-showcase { font-size: 11.5px; }
+  body.print-doc-portfolio.print-style-showcase h1.name { font-size: 30pt; line-height: 1.05; letter-spacing: -0.02em; }
+  body.print-doc-portfolio.print-style-showcase .headline { font-size: 13pt; }
+  body.print-doc-portfolio.print-style-showcase .summary { font-size: 14px; line-height: 1.7; }
+  body.print-doc-portfolio.print-style-showcase .identity-card { padding: 30px 30px; margin-bottom: 26px; }
+  body.print-doc-portfolio.print-style-showcase .section-pane[data-pane]::before {
+    font-family: var(--font-sans); font-size: 17pt; font-weight: 800;
+    text-transform: capitalize; letter-spacing: -0.01em; margin: 30px 0 14px;
+  }
+  body.print-doc-portfolio.print-style-showcase .section-pane:first-of-type::before { margin-top: 14px; }
+  body.print-doc-portfolio.print-style-showcase .item-card { margin-bottom: 14px; }
+  body.print-doc-portfolio.print-style-showcase .item-head { padding: 16px 18px 16px 21px; }
+  body.print-doc-portfolio.print-style-showcase .item-body-inner { padding-bottom: 22px; gap: 16px; }
+
+  /* ── RESUME document — swap the portfolio for #resume-view. ── */
+  body.print-doc-resume .identity-card,
+  body.print-doc-resume .section-grid,
+  body.print-doc-resume .section-pane,
+  body.print-doc-resume .footer { display: none !important; }
+  body.print-doc-resume #resume-view { display: block !important; background: #fff; color: #111; }
+  /* Shared resume bones — ATS-safe, style-independent. */
+  body.print-doc-resume #resume-view h1,
+  body.print-doc-resume #resume-view h2,
+  body.print-doc-resume #resume-view h3,
+  body.print-doc-resume #resume-view p { margin: 0; }
+  body.print-doc-resume #resume-view h2 { break-after: avoid; page-break-after: avoid; }
+  body.print-doc-resume .resume-entry { break-inside: avoid; page-break-inside: avoid; }
+  body.print-doc-resume #resume-view li { orphans: 2; widows: 2; }
+  /* Title left, dates right — flex, not a table: copies out as linear text,
+     so the PDF still passes the plain-text ATS paste test. */
+  body.print-doc-resume .resume-entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  body.print-doc-resume .resume-dates { white-space: nowrap; }
+
+  /* ── RESUME · CLASSIC — the timeless serif résumé: single column, black
+        on white, centered name, ruled caps headings, traditional margins
+        (#resume-view padding + the 0.5in/0.55in @page margin ≈ 1in). ── */
+  body.print-doc-resume.print-style-classic #resume-view {
+    font-family: Georgia, 'Charter', 'Times New Roman', serif;
+    font-size: 11pt; line-height: 1.35; padding: 0.5in 0.45in;
+  }
+  body.print-doc-resume.print-style-classic #resume-view h1 { font-size: 22pt; font-weight: 400; text-align: center; letter-spacing: 0.04em; }
+  body.print-doc-resume.print-style-classic .resume-headline { text-align: center; font-size: 11pt; margin-top: 2pt; }
+  body.print-doc-resume.print-style-classic .resume-contact { text-align: center; font-size: 10pt; margin-top: 3pt; }
+  body.print-doc-resume.print-style-classic .resume-header { margin-bottom: 16pt; }
+  body.print-doc-resume.print-style-classic #resume-view h2 { font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.10em; border-bottom: 0.75pt solid #111; padding-bottom: 2pt; margin: 14pt 0 6pt; }
+  body.print-doc-resume.print-style-classic #resume-view h3 { font-size: 11pt; font-weight: 700; }
+  body.print-doc-resume.print-style-classic .resume-entry { margin: 0 0 9pt; }
+  body.print-doc-resume.print-style-classic .resume-org,
+  body.print-doc-resume.print-style-classic .resume-dates { font-size: 10.5pt; font-style: italic; }
+  body.print-doc-resume.print-style-classic #resume-view ul { margin: 3pt 0 0; padding-left: 14pt; }
+  body.print-doc-resume.print-style-classic #resume-view li { margin: 0 0 2.5pt; }
+
+  /* ── RESUME · MODERN — Inter, compact left-aligned header, thin rules,
+        one restrained orange accent on the name + section rules only.
+        Fixed #D97706 (not the token) so dark-theme printing stays correct. ── */
+  body.print-doc-resume.print-style-modern #resume-view {
+    font-family: var(--font-sans);
+    font-size: 10.5pt; line-height: 1.4; color: #1a1a1a; padding: 0.35in 0.45in;
+  }
+  body.print-doc-resume.print-style-modern #resume-view h1 { font-size: 23pt; font-weight: 700; letter-spacing: -0.01em; color: #D97706; }
+  body.print-doc-resume.print-style-modern .resume-headline { font-size: 11pt; font-weight: 600; margin-top: 1pt; }
+  body.print-doc-resume.print-style-modern .resume-contact { font-size: 9.5pt; color: #555; margin-top: 2pt; }
+  body.print-doc-resume.print-style-modern .resume-header { margin-bottom: 14pt; }
+  body.print-doc-resume.print-style-modern #resume-view h2 { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: #444; border-bottom: 0.5pt solid #D97706; padding-bottom: 2pt; margin: 16pt 0 6pt; }
+  body.print-doc-resume.print-style-modern #resume-view h3 { font-size: 11pt; font-weight: 600; }
+  body.print-doc-resume.print-style-modern .resume-entry { margin: 0 0 9pt; }
+  body.print-doc-resume.print-style-modern .resume-org,
+  body.print-doc-resume.print-style-modern .resume-dates { font-size: 9.5pt; color: #555; }
+  body.print-doc-resume.print-style-modern #resume-view ul { margin: 4pt 0 0; padding-left: 13pt; }
+  body.print-doc-resume.print-style-modern #resume-view li { margin: 0 0 3pt; }
+
+  /* ── RESUME · COMPACT — dense one-pager: 10px body, tight leading and
+        margins (the 0.5in/0.55in @page margin IS the floor — no padding),
+        maximizes content per page. ── */
+  body.print-doc-resume.print-style-compact #resume-view {
+    font-family: var(--font-sans);
+    font-size: 10px; line-height: 1.22; padding: 0;
+  }
+  body.print-doc-resume.print-style-compact #resume-view h1 { font-size: 21px; font-weight: 700; }
+  body.print-doc-resume.print-style-compact .resume-headline { font-size: 11px; font-weight: 600; margin-top: 1px; }
+  body.print-doc-resume.print-style-compact .resume-contact { font-size: 9.5px; color: #444; margin-top: 1px; }
+  body.print-doc-resume.print-style-compact .resume-header { margin-bottom: 10px; }
+  body.print-doc-resume.print-style-compact #resume-view h2 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 0.5px solid #999; padding-bottom: 1px; margin: 9px 0 3px; }
+  body.print-doc-resume.print-style-compact #resume-view h3 { font-size: 10px; font-weight: 700; }
+  body.print-doc-resume.print-style-compact .resume-entry { margin: 0 0 6px; }
+  body.print-doc-resume.print-style-compact .resume-org,
+  body.print-doc-resume.print-style-compact .resume-dates { font-size: 9px; color: #444; }
+  body.print-doc-resume.print-style-compact #resume-view ul { margin: 1.5px 0 0; padding-left: 12px; }
+  body.print-doc-resume.print-style-compact #resume-view li { margin: 0 0 1.5px; }
 }
 
 .identity-card { position: relative; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); padding: 22px 24px; margin-bottom: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
@@ -329,6 +499,49 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 .footer a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid var(--border-default); transition: color 0.2s, border-color 0.2s; }
 .footer a:hover { color: var(--accent-orange); border-color: var(--accent-orange); }
 
+/* ─── Share menu (popover) ──────────────────────────────────────────────
+   Opened by #share-btn. Items: Copy link · LinkedIn · X · WhatsApp · Email.
+   Token-styled so it works in both themes; never prints (topbar is hidden). */
+.share-wrap { position: relative; display: inline-flex; }
+#share-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; min-width: 172px; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-card); box-shadow: var(--shadow-md); padding: 5px; }
+#share-menu[hidden] { display: none; }
+.share-item { display: block; width: 100%; padding: 8px 11px; border-radius: var(--radius-button); font-size: 12.5px; font-weight: 600; color: var(--text-secondary); transition: background 0.15s, color 0.15s; }
+.share-item:hover { background: var(--card-bg-hover); color: var(--text-primary); }
+
+/* ─── Export chooser (modal) ────────────────────────────────────────────
+   Opened by #pdf-btn. Picks document (portfolio | resume) + print style, then
+   sets body.print-doc-<type>.print-style-<style> and calls window.print(). */
+#export-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+#export-modal[hidden] { display: none; }
+.export-backdrop { position: absolute; inset: 0; background: rgba(26,22,18,0.45); }
+[data-theme="dark"] .export-backdrop { background: rgba(0,0,0,0.55); }
+.export-dialog { position: relative; width: min(460px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); box-shadow: var(--shadow-md); padding: 18px 20px 20px; }
+.export-head { display: flex; align-items: center; justify-content: space-between; }
+.export-head h2 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); }
+.export-x { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-button); color: var(--text-muted); font-size: 18px; line-height: 1; transition: background 0.15s, color 0.15s; }
+.export-x:hover { background: var(--surface-2); color: var(--text-primary); }
+.export-group { border: 0; margin: 14px 0 0; padding: 0; min-width: 0; }
+.export-group-label { display: block; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-muted); padding: 0; margin: 0 0 8px; }
+.export-opts { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.export-opts-2 { grid-template-columns: 1fr 1fr; }
+.export-opt { position: relative; display: block; background: var(--surface-2); border: 1px solid var(--border-default); border-radius: var(--radius-button); padding: 9px 12px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.export-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.export-opt:hover { border-color: var(--border-hover); }
+.export-opt.selected { border-color: var(--accent-orange); background: var(--accent-orange-bg); }
+.export-opt .opt-name { display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.export-opt .opt-tag { margin-left: 6px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.10em; color: var(--accent-orange); }
+.export-opt .opt-desc { display: block; margin-top: 2px; font-size: 11.5px; line-height: 1.45; color: var(--text-secondary); }
+.export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.export-cancel { height: 32px; padding: 0 14px; border-radius: var(--radius-pill); border: 1px solid var(--border-default); color: var(--text-secondary); font-size: 12.5px; font-weight: 600; transition: border-color 0.15s, color 0.15s; }
+.export-cancel:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.export-confirm { height: 32px; padding: 0 16px; border-radius: var(--radius-pill); background: var(--accent-orange); color: #fff; font-size: 12.5px; font-weight: 700; box-shadow: var(--accent-orange-glow); transition: background 0.15s; }
+.export-confirm:hover { background: var(--accent-orange-hover); }
+@media (max-width: 640px) { .export-opts-2 { grid-template-columns: 1fr; } }
+
+/* ─── Resume view — never rendered on screen. Print-only, via the export
+   chooser setting body.print-doc-resume (see the print blocks above). ─── */
+#resume-view { display: none; }
+
 @media (max-width: 640px) {
   .wrap { padding: 16px 14px 60px; }
   .identity-card { padding: 18px 18px; }
@@ -347,10 +560,19 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 <div class="wrap">
 
   <div class="topbar materialize">
-    <button id="share-btn" class="action-btn" type="button" aria-label="Share this portfolio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"></path></svg>
-      <span>Share</span>
-    </button>
+    <div class="share-wrap">
+      <button id="share-btn" class="action-btn" type="button" aria-label="Share this portfolio" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"></path></svg>
+        <span>Share</span>
+      </button>
+      <div id="share-menu" hidden role="menu" aria-label="Share this portfolio">
+        <button class="share-item" type="button" role="menuitem" data-share="copy">Copy link</button>
+        <button class="share-item" type="button" role="menuitem" data-share="linkedin">LinkedIn</button>
+        <button class="share-item" type="button" role="menuitem" data-share="x">X</button>
+        <button class="share-item" type="button" role="menuitem" data-share="whatsapp">WhatsApp</button>
+        <button class="share-item" type="button" role="menuitem" data-share="email">Email</button>
+      </div>
+    </div>
     <button id="pdf-btn" class="action-btn" type="button" aria-label="Save as PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
       <span>Save as PDF</span>
@@ -717,10 +939,144 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
     <!-- HOPE:projects_loop_end -->
   </div>
 
+  <!-- RESUME VIEW (print-only) ===================================== -->
+  <!-- Always hidden on screen (#resume-view{display:none}); shown ONLY when
+       printing with body.print-doc-resume, set by the export chooser. The
+       markup is deliberately ATS-parseable: real <h1>/<h2>/<ul><li>, standard
+       section names, no tables, no text-in-images, no icon fonts.
+       Portfolio skill substitutes:
+         {{resume_contact_line}} — one plain-text line: location · email · linkedin
+         {{resume_summary}}      — 2-3 sentence professional summary
+         resume_experience loop  — role, company, dates, 2-4 metric-led bullets
+         resume_education loop   — degree, institution, dates
+         HOPE:resume_skills_line — replaced with the comma-joined skill names -->
+  <div id="resume-view" hidden>
+    <header class="resume-header">
+      <h1>{{name}}</h1>
+      <p class="resume-headline">{{headline}}</p>
+      <p class="resume-contact">{{resume_contact_line}}</p>
+    </header>
+    <section class="resume-section">
+      <h2>Summary</h2>
+      <p class="resume-summary">{{resume_summary}}</p>
+    </section>
+    <section class="resume-section">
+      <h2>Experience</h2>
+      <!-- HOPE:resume_experience_loop_start
+           For each Experience (sort: is_current first, then start_date desc),
+           render the entry below. 2-4 bullets per role; lead each bullet with
+           the quantified achievement where the graph carries a metric. -->
+      <article class="resume-entry">
+        <div class="resume-entry-head">
+          <h3>{{role_title}}</h3>
+          <span class="resume-dates">{{role_dates}}</span>
+        </div>
+        <p class="resume-org">{{company}}</p>
+        <ul>
+          <!-- HOPE:resume_bullets_loop -->
+          <li>{{resume_bullet}}</li>
+          <!-- /HOPE:resume_bullets_loop -->
+        </ul>
+      </article>
+      <!-- HOPE:resume_experience_loop_end -->
+    </section>
+    <section class="resume-section">
+      <h2>Education</h2>
+      <!-- HOPE:resume_education_loop_start -->
+      <article class="resume-entry">
+        <div class="resume-entry-head">
+          <h3>{{degree_line}}</h3>
+          <span class="resume-dates">{{edu_dates}}</span>
+        </div>
+        <p class="resume-org">{{institution}}</p>
+      </article>
+      <!-- HOPE:resume_education_loop_end -->
+    </section>
+    <section class="resume-section">
+      <h2>Skills</h2>
+      <p class="resume-skills">
+        <!-- HOPE:resume_skills_line -->
+      </p>
+    </section>
+  </div>
+
   <!-- Made with Hope, and given to you freely. If it helped you find work, please keep this
        credit so the next person finds Hope too. It's your file under MIT, so the choice is
        yours — but we hope you'll leave it. Pay it forward. -->
   <div class="footer">Generated with <a href="https://github.com/oneconsciousness/claude-job-hunt-with-hope" target="_blank" rel="noopener">Hope</a> · {{generation_date}}{{#target_company}} · For {{target_company}}{{/target_company}}</div>
+</div>
+
+<!-- EXPORT CHOOSER (modal) ========================================= -->
+<!-- Opened by #pdf-btn. Self-contained: picks document + style, sets
+     body.print-doc-<type>.print-style-<style>, closes, calls window.print().
+     Last choice persists in localStorage ('hope-export-pref'). -->
+<div id="export-modal" hidden role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+  <div class="export-backdrop" data-export-close></div>
+  <div class="export-dialog">
+    <div class="export-head">
+      <h2 id="export-modal-title">Save as PDF</h2>
+      <button class="export-x" type="button" aria-label="Close" data-export-close>&times;</button>
+    </div>
+    <fieldset class="export-group">
+      <legend class="export-group-label">Document</legend>
+      <div class="export-opts export-opts-2">
+        <label class="export-opt">
+          <input type="radio" name="export-doc" value="portfolio" checked />
+          <span class="opt-name">Portfolio</span>
+          <span class="opt-desc">The full portfolio — your story, evidence and projects.</span>
+        </label>
+        <label class="export-opt">
+          <input type="radio" name="export-doc" value="resume" />
+          <span class="opt-name">Resume</span>
+          <span class="opt-desc">A traditional ATS-friendly résumé built from the same data.</span>
+        </label>
+      </div>
+    </fieldset>
+    <fieldset class="export-group" id="export-styles-portfolio">
+      <legend class="export-group-label">Style</legend>
+      <div class="export-opts">
+        <label class="export-opt">
+          <input type="radio" name="export-style-portfolio" value="classic" checked />
+          <span class="opt-name">Classic<span class="opt-tag">Recommended</span></span>
+          <span class="opt-desc">The signature cream-and-orange look, tuned for paper.</span>
+        </label>
+        <label class="export-opt">
+          <input type="radio" name="export-style-portfolio" value="ink" />
+          <span class="opt-name">Ink</span>
+          <span class="opt-desc">Conservative black-and-white for corporate submissions.</span>
+        </label>
+        <label class="export-opt">
+          <input type="radio" name="export-style-portfolio" value="showcase" />
+          <span class="opt-name">Showcase</span>
+          <span class="opt-desc">Designer-forward: big type, extra whitespace, projects first.</span>
+        </label>
+      </div>
+    </fieldset>
+    <fieldset class="export-group" id="export-styles-resume" hidden>
+      <legend class="export-group-label">Style</legend>
+      <div class="export-opts">
+        <label class="export-opt">
+          <input type="radio" name="export-style-resume" value="classic" checked />
+          <span class="opt-name">Classic</span>
+          <span class="opt-desc">Timeless serif résumé — black on white, single column.</span>
+        </label>
+        <label class="export-opt">
+          <input type="radio" name="export-style-resume" value="modern" />
+          <span class="opt-name">Modern</span>
+          <span class="opt-desc">Clean sans-serif with one restrained orange accent.</span>
+        </label>
+        <label class="export-opt">
+          <input type="radio" name="export-style-resume" value="compact" />
+          <span class="opt-name">Compact</span>
+          <span class="opt-desc">Dense one-pager that fits the most onto a single page.</span>
+        </label>
+      </div>
+    </fieldset>
+    <div class="export-actions">
+      <button class="export-cancel" type="button" data-export-close>Cancel</button>
+      <button id="export-confirm" class="export-confirm" type="button">Save as PDF</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -739,56 +1095,177 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
   document.getElementById('theme-toggle').addEventListener('click', () => {
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
-  // Share — native share sheet where available, otherwise copy the link.
-  // URL source: the <meta name="hope:share-url"> content, which the publish skill
-  // rewrites to the canonical GitHub Pages URL. Empty (un-published) → fall back to
-  // window.location.href so it still works when opened directly on the live page.
+  // Share — #share-btn opens the #share-menu popover.
+  // Items: Copy link · LinkedIn · X · WhatsApp · Email. Canonical URL: the
+  // <meta name="hope:share-url"> content, which the publish skill rewrites to
+  // the live GitHub Pages URL. Empty (un-published) → window.location.href.
   var shareBtn = document.getElementById('share-btn');
-  if (shareBtn) {
-    var shareLabel = shareBtn.querySelector('span');
-    var flash = function (text, ok) {
-      if (shareLabel) shareLabel.textContent = text;
-      if (ok) shareBtn.classList.add('copied');
-      setTimeout(function () {
-        if (shareLabel) shareLabel.textContent = shareLabel.dataset.idle;
-        shareBtn.classList.remove('copied');
-      }, 1600);
-    };
-    if (shareLabel) shareLabel.dataset.idle = shareLabel.textContent;
-    var copyFallback = function (url) {
-      // Non-secure context (file://, http) — navigator.clipboard is undefined there.
-      // document.execCommand('copy') is deprecated but the only path that works.
-      try {
-        var ta = document.createElement('textarea');
-        ta.value = url; ta.setAttribute('readonly', '');
-        ta.style.position = 'absolute'; ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select(); ta.setSelectionRange(0, url.length);
-        var ok = document.execCommand('copy');
-        document.body.removeChild(ta);
-        flash(ok ? 'Copied!' : 'Copy: ' + url, ok);
-      } catch (e) { flash('Copy: ' + url, false); }
-    };
-    shareBtn.addEventListener('click', async function () {
-      var meta = document.querySelector('meta[name="hope:share-url"]');
-      var canonical = meta && meta.content ? meta.content.trim() : '';
-      var url = canonical || window.location.href;
-      // No published link yet and opened from disk → don't leak the local file path.
-      if (!canonical && url.indexOf('file:') === 0) { flash('Publish first to share a link', false); return; }
-      if (navigator.share) {
-        try { await navigator.share({ title: document.title, url: url }); return; }
-        catch (e) { if (e && e.name === 'AbortError') return; /* real error → fall through */ }
+  var shareMenu = document.getElementById('share-menu');
+  var shareLabel = shareBtn ? shareBtn.querySelector('span') : null;
+  if (shareLabel) shareLabel.dataset.idle = shareLabel.textContent;
+  var flash = function (text, ok) {
+    if (shareLabel) shareLabel.textContent = text;
+    if (ok) shareBtn.classList.add('copied');
+    setTimeout(function () {
+      if (shareLabel) shareLabel.textContent = shareLabel.dataset.idle;
+      shareBtn.classList.remove('copied');
+    }, 1600);
+  };
+  var getCanonicalUrl = function () {
+    var meta = document.querySelector('meta[name="hope:share-url"]');
+    return meta && meta.content ? meta.content.trim() : '';
+  };
+  var getShareUrl = function () { return getCanonicalUrl() || window.location.href; };
+  var getName = function () {
+    var el = document.querySelector('h1.name');
+    return el ? el.textContent.trim() : '';
+  };
+  var getShareText = function () {
+    var el = document.querySelector('.headline');
+    var headline = el ? el.textContent.trim() : '';
+    return headline ? getName() + ' — ' + headline : getName();
+  };
+  var copyFallback = function (url) {
+    // Non-secure context (file://, http) — navigator.clipboard is undefined there.
+    // document.execCommand('copy') is deprecated but the only path that works.
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = url; ta.setAttribute('readonly', '');
+      ta.style.position = 'absolute'; ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, url.length);
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      flash(ok ? 'Copied!' : 'Copy: ' + url, ok);
+    } catch (e) { flash('Copy: ' + url, false); }
+  };
+  var copyShareUrl = function () {
+    var canonical = getCanonicalUrl();
+    var url = canonical || window.location.href;
+    // No published link yet and opened from disk → don't leak the local file path.
+    if (!canonical && url.indexOf('file:') === 0) { flash('Publish first to share a link', false); return; }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(
+        function () { flash('Copied!', true); },
+        function () { copyFallback(url); }
+      );
+      return;
+    }
+    copyFallback(url);
+  };
+  var closeShareMenu = function () {
+    if (shareMenu && !shareMenu.hidden) {
+      shareMenu.hidden = true;
+      if (shareBtn) shareBtn.setAttribute('aria-expanded', 'false');
+    }
+  };
+  if (shareBtn && shareMenu) {
+    shareBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (shareMenu.hidden) {
+        shareMenu.hidden = false;
+        shareBtn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeShareMenu();
       }
-      if (navigator.clipboard && window.isSecureContext) {
-        try { await navigator.clipboard.writeText(url); flash('Copied!', true); return; }
-        catch (e) { /* fall through to execCommand */ }
+    });
+    shareMenu.addEventListener('click', function (e) {
+      var item = e.target.closest('[data-share]');
+      if (!item) return;
+      var action = item.getAttribute('data-share');
+      closeShareMenu();
+      if (action === 'copy') { copyShareUrl(); return; }
+      var url = getShareUrl();
+      var text = getShareText();
+      var href = '';
+      if (action === 'linkedin') {
+        href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+      } else if (action === 'x') {
+        href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+      } else if (action === 'whatsapp') {
+        href = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + url);
+      } else if (action === 'email') {
+        // %0D%0A%0D%0A = RFC 6068 blank line between the text and the link.
+        href = 'mailto:?subject=' + encodeURIComponent(getName() + ' — Portfolio') +
+               '&body=' + encodeURIComponent(text) + '%0D%0A%0D%0A' + encodeURIComponent(url);
       }
-      copyFallback(url);
+      if (href) window.open(href, '_blank', 'noopener');
+    });
+    document.addEventListener('click', function (e) {
+      if (!shareMenu.hidden && !e.target.closest('.share-wrap')) closeShareMenu();
     });
   }
-  // Save as PDF — opens the browser print dialog; pick "Save as PDF".
+  // Save as PDF — #pdf-btn opens the #export-modal chooser. "Save as PDF"
+  // sets body.print-doc-<type> + .print-style-<style>, closes the modal and
+  // calls window.print(); 'afterprint' removes the classes. The last choice
+  // persists in localStorage ('hope-export-pref') and is preselected next time.
   var pdfBtn = document.getElementById('pdf-btn');
-  if (pdfBtn) pdfBtn.addEventListener('click', function () { window.print(); });
+  var exportModal = document.getElementById('export-modal');
+  var EXPORT_PREF_KEY = 'hope-export-pref';
+  var EXPORT_STYLES = { portfolio: ['classic', 'ink', 'showcase'], resume: ['classic', 'modern', 'compact'] };
+  var readExportPref = function () {
+    var pref = { doc: 'portfolio', style: 'classic' };
+    try {
+      var raw = localStorage.getItem(EXPORT_PREF_KEY);
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (p && EXPORT_STYLES[p.doc]) {
+          pref.doc = p.doc;
+          if (EXPORT_STYLES[p.doc].indexOf(p.style) !== -1) pref.style = p.style;
+        }
+      }
+    } catch (e) {}
+    return pref;
+  };
+  var checkedValue = function (name) {
+    var el = exportModal ? exportModal.querySelector('input[name="' + name + '"]:checked') : null;
+    return el ? el.value : '';
+  };
+  var syncExportUI = function () {
+    var doc = checkedValue('export-doc') || 'portfolio';
+    document.getElementById('export-styles-portfolio').hidden = doc !== 'portfolio';
+    document.getElementById('export-styles-resume').hidden = doc !== 'resume';
+    exportModal.querySelectorAll('.export-opt').forEach(function (opt) {
+      var input = opt.querySelector('input');
+      opt.classList.toggle('selected', !!(input && input.checked));
+    });
+  };
+  var closeExportModal = function () { if (exportModal) exportModal.hidden = true; };
+  if (pdfBtn && exportModal) {
+    pdfBtn.addEventListener('click', function () {
+      var pref = readExportPref();
+      var docRadio = exportModal.querySelector('input[name="export-doc"][value="' + pref.doc + '"]');
+      if (docRadio) docRadio.checked = true;
+      var styleRadio = exportModal.querySelector('input[name="export-style-' + pref.doc + '"][value="' + pref.style + '"]');
+      if (styleRadio) styleRadio.checked = true;
+      syncExportUI();
+      exportModal.hidden = false;
+    });
+    exportModal.addEventListener('change', syncExportUI);
+    exportModal.addEventListener('click', function (e) {
+      if (e.target.closest('[data-export-close]')) closeExportModal();
+    });
+    document.getElementById('export-confirm').addEventListener('click', function () {
+      var doc = checkedValue('export-doc') || 'portfolio';
+      var style = checkedValue('export-style-' + doc) || 'classic';
+      try { localStorage.setItem(EXPORT_PREF_KEY, JSON.stringify({ doc: doc, style: style })); } catch (e) {}
+      document.body.classList.add('print-doc-' + doc, 'print-style-' + style);
+      closeExportModal();
+      window.print();
+    });
+    window.addEventListener('afterprint', function () {
+      var stale = [];
+      document.body.classList.forEach(function (c) {
+        if (c.indexOf('print-doc-') === 0 || c.indexOf('print-style-') === 0) stale.push(c);
+      });
+      stale.forEach(function (c) { document.body.classList.remove(c); });
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (exportModal && !exportModal.hidden) closeExportModal();
+    closeShareMenu();
+  });
   document.querySelectorAll('.section-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-section');
