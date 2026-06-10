@@ -49,7 +49,7 @@ v0.1 ships one flow: tell Hope about yourself, get a portfolio, put it online.
 
 ## Your data stays with you
 
-Everything lives in one file on your computer: `career.json`. It holds your facts — your work, skills, and the roles you are chasing.
+Your facts live in one file on your computer: `career.json` — your work, skills, and the roles you are chasing. Hope also keeps a small notebook, `user-story.md` — notes on how you like to work and where you are in the hunt. Both files are yours: open them, edit them, delete them.
 
 You own this file. You can open it, move it, back it up, or delete it. **No tracking. Nothing leaves your machine.**
 

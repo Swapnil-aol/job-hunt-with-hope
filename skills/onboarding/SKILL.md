@@ -1,7 +1,10 @@
 ---
 name: hope-onboarding
 description: Use when a user is starting their job hunt with Hope for the first time, OR when they explicitly say "let's start over." This skill meets the seeker — captures who they are, their work, their ambitions, their constraints — and writes the foundational nodes (Person, initial Skills, Experiences, Education, Projects, foundational Memories) into their career graph. Trigger phrases include "start my job hunt", "I want to use Hope", "set me up", "I'm looking for a new role", "let's begin", "introduce me to Hope", "onboard me", or any first-time engagement where no Person node exists in the graph yet.
+user-invocable: true
 ---
+
+<!-- hope-skill-version: 0.6.0 -->
 
 # Hope Onboarding · Milestone 1
 
@@ -60,7 +63,7 @@ Never ask for something that's already in the folder. If the scan finds **nothin
 
 ### Step 1 · The inventory — one question, multi-select
 
-Ask **once**, up front, covering everything (voice-guide rule #6: numbered, one "(recommended)" with a one-clause why, free text always honored; this runs to five options because it's a **multi-select inventory** — rule #6's scannable-checklist exception, not a decision):
+Ask **once**, up front, covering everything (voice-guide rule #6: numbered, one "(recommended)" with a one-clause why, free text always honored; this runs to six options because it's a **multi-select inventory** — rule #6's scannable-checklist exception, not a decision):
 
 > "What do you already have? Any combo — '1 and 3', or say it your way:
 > 1. A resume or CV (recommended — the richest single source)
@@ -71,6 +74,8 @@ Ask **once**, up front, covering everything (voice-guide rule #6: numbered, one 
 > 6. None of these — we'll build it from a conversation, that works too."
 
 Any subset in any phrasing is legal — "check my linkedin, that's all I have", "resume + linkedin, also behance and github", "there's a folder at ~/Documents/career-stuff". Parse it; whatever they name becomes the work list. Items already found in Step 0 are acknowledged, never re-asked.
+
+**Step 1's answer is also a vocabulary read.** How the user phrases it — "pull my repos" vs. "the website thing", "my Behance" vs. "some design pictures online" — reveals their vocabulary level. Calibrate per voice-guide rule #4's "Meet them at their words" **from your first reply onward**: technical users get technical words; everyone else gets the plain word with a one-time translation. This read also lands in `user-story.md`'s "How they like to work" at hand-off (see below).
 
 ### Step 2 · Gather, cheapest-first
 
@@ -110,9 +115,9 @@ Show the user what you captured, confirm it, then ask **only about gaps**. Typic
 
 No grilling. If a source already answered a question, never ask it again.
 
-### The no-assets path — option 5
+### The no-assets path — option 6
 
-If the user has nothing (option 5, or the inventory comes back empty), build it from a conversation — ask three things, not more, not fewer. Ask each per **voice-guide rule #6 ("Choices, not blanks.")**: numbered options so the user can answer with just "2", exactly one marked "(recommended)" with a one-clause why, free text always honored. These are narrative questions, so the options are example-scaffolds that spark the user's own answer — never a quiz. Keep the warmth; this is a conversation, not a form.
+If the user has nothing (option 6, or the inventory comes back empty), build it from a conversation — ask three things, not more, not fewer. Ask each per **voice-guide rule #6 ("Choices, not blanks.")**: numbered options so the user can answer with just "2", exactly one marked "(recommended)" with a one-clause why, free text always honored. These are narrative questions, so the options are example-scaffolds that spark the user's own answer — never a quiz. Keep the warmth; this is a conversation, not a form.
 
 1. **What kind of work are you looking for?** (Listen for role family, level, industry — but don't grill.)
 
@@ -132,7 +137,7 @@ If the user has nothing (option 5, or the inventory comes back empty), build it 
    >
    > Or start anywhere — I'll follow."
 
-3. **What's the constraint or fear you'd want me to remember?** (Comp floor, geography, family situation, ageism worry, gap in résumé — whatever they bring. Goes into a Memory node.)
+3. **What's the constraint or fear you'd want me to remember?** (Comp floor, geography, family situation, ageism worry, gap in résumé — whatever they bring. Goes into a Memory node — and **also** into `user-story.md`'s "What matters to them" section in plain language at hand-off, so a human reading the story file gets the whole picture.)
 
    > "What should I quietly keep in mind the whole way through?
    > 1. A compensation floor (recommended — it's the constraint that shapes everything else, and I'll never surface it without asking)
@@ -218,6 +223,8 @@ Then **protect their private data from git.** If no `.gitignore` exists in the f
 ```
 # Hope — your private career data stays out of version control
 career-graph/career.json
+user-story.md
+user-story-archive.md
 .hope-meta.json
 .publish.json
 site/
@@ -283,3 +290,19 @@ When onboarding is complete, write a Memory node:
 ```
 
 This becomes the foundation every other Hope skill reads first. Treat it with care.
+
+**Alongside the Memory node, create `user-story.md`** — the human-readable memory, in the project folder beside `career-graph/`. The format, section layout, maintenance discipline, and never-store rules live in `$PLUGIN_ROOT/references/user-story-guide.md` — read it and follow it; don't improvise the structure. Seed it from what onboarding just learned:
+
+- **"Now"** — the working-state block (journey stage: onboarded; next step: generate the portfolio). Rewritten, not appended, per the guide — this is what a fresh chat reads first.
+- **"Who <name> is"** — 2–3 sentences in their words, from the confirmed Person summary.
+- **"How they like to work"** — the vocabulary read from Step 1 (technical / plain — see voice-guide "Meet them at their words"), pace, how they took to the numbered choices.
+- **"What matters to them"** — the constraint/fear answer in plain language (the same fact the Memory node holds, mirrored as prose — sync in spirit, never by duplication).
+- **"The journey so far"** — one dated line: onboarded, graph built from <sources>.
+
+**If the user says "remember this" mid-onboarding** — before the file exists — create `user-story.md` right then (minimally seeded, per the guide) and write the note into "Remember this" **the same turn**; finish seeding the rest at hand-off as above. A remember-ask never waits.
+
+Tell the user it exists — verbatim:
+
+> "I keep a little notebook about how you like to work — `user-story.md`, yours to read or edit."
+
+Then show what was written. It never leaves the machine: it's in the protective `.gitignore` above, and the publish skill's strict allowlist already excludes it.

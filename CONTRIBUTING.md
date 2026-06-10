@@ -13,7 +13,7 @@ These five are non-negotiable. They protect the trust Hope is built on. Breaking
 1. **Data ownership is sacred.** Never add telemetry, analytics, or anything that phones home. Never move a user's secret or career-data file off their machine (`curl`/`scp`/`rsync` upload, `source .env`, `--env-file`, `--data @file`). Hope's flagship promise is *your data stays on your machine, nothing phones home.* No exceptions, no override.
 2. **Confirm-before-submit on `application` is permanent.** The confirm-before-submit guardrail on Computer Use auto-fill is part of Hope's brand promise. You never remove it. The same posture (confirm-before-irreversible) extends to every irreversible action on the user's external assets — see §7.
 3. **Design tokens are locked.** The visual identity in `references/design-tokens.md` (`--accent-orange`, `--accent-cyan`, the layout, the texture) is the brand. Changes require explicit maintainer sign-off. See §10.
-4. **No secrets or user career data in commits.** `career.json`, `.env`, `*.pem`, `credentials.*` are gitignored on purpose. Never commit them, never read-and-print them into your context. User-managed only. See §13.
+4. **No secrets or user career data in commits.** `career.json`, `user-story.md`, `.env`, `*.pem`, `credentials.*` are gitignored on purpose. Never commit them, never read-and-print them into your context. User-managed only. See §13.
 5. **No silent spec deviation.** When you work from a written spec — a schema, a plan, a payload contract, an output format — the spec is ground truth. Silent additions, omissions, or "improvements" are failures even when tests pass. Ask first. See §9.
 
 If you're unsure whether something violates one of these, **treat it as a violation and ask.** A 30-second pause is cheaper than an irreversible mistake.
@@ -179,13 +179,13 @@ The goal is **not** to block work. It's to **catch the deviation early**, explai
 7. Modifying design tokens without maintainer approval (§10).
 8. Removing or weakening a Computer Use / confirm-before-submit guardrail (§7).
 9. Adding telemetry, analytics, or anything that phones home.
-10. Committing files that are gitignored on purpose (`career.json`, `.env`, `CLAUDE.md`, `references/design-cookbook.md`, `tasks/`, `.claude/`).
+10. Committing files that are gitignored on purpose (`career.json`, `user-story.md`, `.env`, `CLAUDE.md`, `references/design-cookbook.md`, `tasks/`, `.claude/`).
 
 **Warning format:** restate the request neutrally → say why you're pausing (the specific rule + one plain-language sentence on why it exists) → suggest a concrete path forward → offer the override ("reply *proceed anyway* and I'll do it, and note the deviation in the PR"). One warning per deviation; once they've chosen, don't re-warn the same thing.
 
 **Tone:** lead with the request, not the rule. No "you violated." No lectures — one sentence on why. Always offer a path. Always offer the override, and treat it kindly. Soft language is fine; vague language is not.
 
-**Refuse outright — no override:** force-push to `main`; delete `main`; commit a secret, `career.json`, or any gitignored internal doc; anything that breaks user data ownership (telemetry, exfiltration). For these, say plainly that you can't do it even with "proceed anyway," name what breaks, and step back — the user does it manually with full awareness of the blast radius.
+**Refuse outright — no override:** force-push to `main`; delete `main`; commit a secret, `career.json`, `user-story.md`, or any gitignored internal doc; anything that breaks user data ownership (telemetry, exfiltration). For these, say plainly that you can't do it even with "proceed anyway," name what breaks, and step back — the user does it manually with full awareness of the blast radius.
 
 ---
 
@@ -256,11 +256,11 @@ The `chore/skills/…` pattern is intentional — maintainers filter skill fixes
 
 **Schema.** The career graph schema (`references/career-graph-schema.md`) is the single source of truth for node types, fields, and contracts. All schema changes go through a migration: bump `hope_schema_version`, document the path, update `scripts/graph_query.py` + `scripts/markdown_graph_convert.py`, and update the persona fixture. Reference fields by their canonical names.
 
-**Secrets and career data are user-managed, never agent-managed.** `career.json`, `.env`, `*.pem`, `*.key`, `credentials.*`, `secrets.*`, `~/.ssh/*` belong to the user.
+**Secrets and career data are user-managed, never agent-managed.** `career.json`, `user-story.md` (the user's personal notebook), `.env`, `*.pem`, `*.key`, `credentials.*`, `secrets.*`, `~/.ssh/*` belong to the user.
 
 - **You never write or edit a secrets file** (`Edit`/`Write`/`MultiEdit`). Even when you hold the new value, the write is the user's — print the proposed change as text and let them paste it.
 - **You never read-and-print a secret into your context** — no `cat`/`head`/`tail`/`less`/`grep` (without `-l`/`-c`/`-q`)/`awk` on a secret or career-data path. The contents would land in your transcript and become exposable.
-- **You never move these files off the machine** — no `curl`/`wget`/`scp`/`sftp`/`rsync`/`nc`/`ftp` upload of a secret or `career.json`, no `source .env` / `. .env`, no `--env-file <secret>`, no `--data @<secret>` / `-F field=@<secret>`. This is the data-ownership promise enforced as behavior, not just config. **Refuse outright** (§8).
+- **You never move these files off the machine** — no `curl`/`wget`/`scp`/`sftp`/`rsync`/`nc`/`ftp` upload of a secret, `career.json`, or `user-story.md`, no `source .env` / `. .env`, no `--env-file <secret>`, no `--data @<secret>` / `-F field=@<secret>`. This is the data-ownership promise enforced as behavior, not just config. **Refuse outright** (§8).
 - **Allowed:** metadata-only and in-place ops that don't expose or exfiltrate — `ls -la`, `wc -l`, `chmod`, `mv`/`cp` between user-owned paths, `grep -l/-c/-q`, `sed -i 's/^KEY=.*/KEY=<new>/'`, `echo "KEY=value" >> .env` (a value the user gave you, on a file you haven't read).
 
 ---

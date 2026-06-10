@@ -1,7 +1,10 @@
 ---
 name: hope-portfolio
 description: Use when a user wants to generate a portfolio — their work, their story, their evidence — as a self-contained branded HTML page they can send to a recruiter, post as a link, or save as a PDF. This is Hope's signature skill. Trigger phrases include "make my portfolio", "generate a portfolio", "create my portfolio for {company}", "I need a portfolio", "show off my work", "tailor a portfolio for this role", "build me something to send", or any request where the deliverable is a curated showcase of who the user is professionally.
+user-invocable: true
 ---
+
+<!-- hope-skill-version: 0.6.0 -->
 
 # Hope Portfolio · Milestone 3 — Hope's Signature
 
@@ -248,7 +251,7 @@ Most portfolios should fit in 2–3 screens of vertical scroll on desktop. Long-
 
 ## What to ask the user before generating
 
-Every question this skill asks follows **voice-guide rule #6 — "Choices, not blanks"**: numbered options (2–4), exactly one "(recommended)" with a one-clause why, free text always honored as the escape hatch. Numbered so the user can answer "2".
+Every question this skill asks follows **voice-guide rule #6 — "Choices, not blanks"**: numbered options (2–4), exactly one "(recommended)" with a one-clause why, free text always honored as the escape hatch. Numbered so the user can answer "2". Per the rule, **weighty or personal questions also carry a final "💬 Chat about this first" option** — picking it means Hope talks it through before deciding; it complements the free-text escape hatch, it doesn't replace it. In this skill that's the Overview opt-in below and the update menu (see "Updating — always start with the menu"); the "What's off?" diagnostic stays chat-option-free — it's a scannable checklist, and chat just adds noise there.
 
 If the user has provided a target Job, just confirm: "Generating a portfolio targeted at {company} for {role}. The angle I'm taking is {angle in one sentence}. Continue?" (A plain yes/no confirm IS rule-#6 compliant — don't pad it with fake options.)
 
@@ -274,6 +277,7 @@ If the answer is "general", scaffold the constraint question instead of leaving 
 > Want an Overview tab opening the section grid — your proudest numbers and a line of interests, the first thing a recruiter sees?
 > 1. **Show it** (recommended — recruiters skim, and your strongest numbers deserve the first screen)
 > 2. **Skip it** — open straight on your Experience
+> 3. **💬 Chat about this first** — we'll talk through what a recruiter should see up front before deciding
 >
 > Or tell me in your own words.
 
@@ -337,14 +341,71 @@ Once the portfolio is live (or any time the user returns), there's exactly one l
 >
 > Or tell me in your own words.
 
-- Want to change what's in it? Re-run this skill's iteration loop, then route back to `hope-publish` to push the update.
+- Want to change what's in it? That's an update — open the update menu below ("Updating — always start with the menu"), then route back to `hope-publish` to push the result.
 - Happy with it and just want it online (or re-published after edits)? Route to `hope-publish`.
 
 That's the whole flow: collect their story → show the portfolio → put it online → update or re-publish on demand. Don't point them anywhere outside this loop.
 
+## Updating — always start with the menu
+
+When the user asks to update — any phrasing counts: "update my portfolio", "change my portfolio", "refresh it", or picking option 1 in the menu above — **never guess what kind of update they mean. Always open with this menu.** (Six options is past rule #6's usual four — the diagnostic-checklist exception applies: this is a scannable list of update *types*, not one weighed decision.)
+
+First read the live Hope version **at runtime** — `<LIVE>` is never hardcoded into prose; it always comes from the installed plugin's manifest:
+
+```bash
+LIVE="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$PLUGIN_ROOT/plugin.json" 2>/dev/null \
+  || jq -r .version "$PLUGIN_ROOT/plugin.json" 2>/dev/null \
+  || grep -m1 '"version"' "$PLUGIN_ROOT/plugin.json" | grep -oE '[0-9]+(\.[0-9]+)+')"
+```
+
+Then ask, substituting `<LIVE>`:
+
+> What are we updating?
+> 1. My story changed — new role, achievement, or project (recommended when something's new)
+> 2. The look — theme, photo, layout choices
+> 3. What's featured — different work up front, target a specific role
+> 4. Update to the latest Hope release (v<LIVE>) — pick up new features
+> 5. Check for all updates — I'll compare everything and propose the lot
+> 6. 💬 Chat about it first — tell me what's on your mind.
+
+**What each option does:**
+
+- **1 — My story changed.** Capture the new facts into the career graph first (new Experience, contribution, Project, or metric nodes — in the user's words, evidence-backed), then regenerate per "Updating an existing portfolio" below.
+- **2 — The look.** Theme default, a new headshot (re-run the bake steps), layout choices the template exposes — then regenerate. Design tokens stay locked; "the look" never means new CSS.
+- **3 — What's featured.** Re-curate: re-run "How to choose what goes in" (optionally against a newly named target role), update the CuratedPortfolio node, regenerate.
+- **4 — Latest Hope release.** Run the stale-session check below. If this chat is already running v<LIVE>, say so plainly — "you're on the newest Hope, nothing to pick up" — and only regenerate if their newest portfolio file predates the current template's features.
+- **5 — Check for all updates.** Compare everything, then propose the lot in one message and let them pick what to act on:
+  1. **Graph changes since the last generation** — anything added or edited in the graph after the newest portfolio file's date (the CuratedPortfolio node records what went out, and when).
+  2. **Plugin version** — this skill's version marker vs `<LIVE>` (the stale-session check below).
+  3. **Republish staleness** — compare the local portfolio file's modified time against `published_at` in `.publish.json` (hope-publish stamps it on every publish, including re-publishes). Local file newer → the live link is behind the local copy. No `.publish.json` → never published; no `published_at` in it → published by an older Hope, just say "worth a republish to be safe."
+- **6 — Chat about it first.** No checklist, no regeneration yet — talk through what's on their mind (voice-guide rule #6's chat option), then land on whichever option fits.
+
 ### Updating an existing portfolio
 
-**Regenerating from the user's existing graph against the current bundled template is THE update path** — never patch old HTML in place. New template features (like the Overview app and the published-mode gates) flow into the regenerated file automatically; then re-publishing via `hope-publish` re-stages the file and re-stamps the published flag, so updates stay sustainable release after release. Honor the existing `CuratedPortfolio.show_summary` decision without re-asking. One distinction to keep straight: **the local file is the owner's editable copy — it never carries `data-hope-mode="published"`; the published copy is the one the publish skill stamps read-only.**
+Options 1–3 (and any updates the user accepts from option 5) land here. **Regenerating from the user's existing graph against the current bundled template is THE update path** — never patch old HTML in place. New template features (like the Overview app and the published-mode gates) flow into the regenerated file automatically; then re-publishing via `hope-publish` re-stages the file and re-stamps the published flag, so updates stay sustainable release after release. Honor the existing `CuratedPortfolio.show_summary` decision without re-asking. One distinction to keep straight: **the local file is the owner's editable copy — it never carries `data-hope-mode="published"`; the published copy is the one the publish skill stamps read-only.**
+
+## Stale-session check — is this chat running an older Hope?
+
+This file carries a version marker near the top — `<!-- hope-skill-version: 0.6.0 -->` — naming the Hope this chat loaded. The live version is whatever `$PLUGIN_ROOT/plugin.json` says **right now** (the `<LIVE>` one-liner above). Run the comparison whenever the user picks option 4 or 5 of the update menu.
+
+When `plugin.json` is **newer** than the marker, this conversation loaded an older Hope — a newer release is installed, but a running chat can't pick it up mid-flight. Output exactly this structure:
+
+1. A bold heading: **Recommendation: start a fresh chat to get the newest Hope (v<LIVE>)**
+2. Simple-English comfort, no jargon: "Nothing will be lost. Everything we've built lives in this folder — your career file, your portfolio, your notes. A new chat just picks up the newest Hope and reads them right back."
+3. A handoff — and define the word naturally the first time it's used: a "handoff" is just that baton-pass summary; explain it once, then it's theirs. Introduce it gently: "Here's a short summary to paste into the new chat so it knows exactly where we left off — think of it as passing the baton:" — then a compact block (≤10 lines) covering **who they are, what exists in the folder, what was in progress, and the next step**. Compose it from `user-story.md` per `$PLUGIN_ROOT/references/user-story-guide.md` § "How the handoff summary is derived" when the file exists — one line from "Who <name> is", the journey cross-checked against the actual files, "Now" for in-progress + next step. No story file yet? Build the same four parts from the graph and this conversation.
+
+When the versions match, no theater: "you're on the newest Hope (v<LIVE>)" and move on.
+
+When the marker is **newer** than `plugin.json` (a dev or unsynced build — the manifest wasn't bumped with the skill), treat the chat as up to date — no handoff theater — and flag it to the maintainer in one line: the skill marker and manifest version disagree and need the sync protocol.
+
+## user-story.md — the notebook this skill keeps current
+
+`user-story.md` lives in the project folder beside `career-graph/` — the user's human-readable memory, defined canonically in `$PLUGIN_ROOT/references/user-story-guide.md` (cross-reference it, don't restate it). **Read it at skill start when it exists** — it's two pages, the cheapest context in the folder, and it sets the vocabulary level, the pacing, and what never to re-ask. This skill touches it at two moments, following the guide's discipline — dated entries, journey newest-first, groom on every touch, notify in one line, never write anything the user would be surprised to find:
+
+- **Milestone append — portfolio generated or updated.** After saving the files, append one dated line to "The journey so far" (e.g. `- 2026-06-10: Portfolio v2 tailored for <company> — platform work up front.`), record any decision worth keeping in "Decisions" (a `show_summary` choice and why, a curation angle), and rewrite "Now" so the next session — or the baton-pass handoff — picks up cleanly.
+- **"Remember this" asides.** When the user says "remember this" (or anything close) mid-flow, write it into "## Remember this" **the same turn** — dated, tagged "(you asked me to remember this)" — then return to the portfolio work.
+
+If the file doesn't exist yet, create it per the guide and announce it verbatim: "I keep a little notebook about how you like to work — `user-story.md`, yours to read or edit." It's the user's file — never committed, never published — and it's what the stale-session handoff above draws from.
 
 ## What you do not do
 

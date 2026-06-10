@@ -1,7 +1,10 @@
 ---
 name: hope-publish
 description: Use when a user wants to put their generated portfolio on the web — get a shareable link, deploy it, host it, make it live. Trigger phrases include "publish my portfolio", "put my portfolio online", "deploy my portfolio", "host it", "give me a link to share", "make it live", "get it on the web", or any request to turn the local portfolio HTML into a public URL. A portfolio nobody can visit gets no interview calls — this is the step that makes the work reachable.
+user-invocable: true
 ---
+
+<!-- hope-skill-version: 0.6.0 -->
 
 # Hope Publish · Presentation, completed
 
@@ -27,16 +30,18 @@ echo "PLUGIN_ROOT=$PLUGIN_ROOT"   # sanity-check before reading bundled files
 
 Read `$PLUGIN_ROOT/references/computer-use-guardrails.md` first. Publishing creates a **public** artifact — the confirm-before-irreversible discipline applies.
 
+Also read `user-story.md` in the project folder if it exists (per `$PLUGIN_ROOT/references/user-story-guide.md`) — its "How they like to work" section tells you how technical this user is, which calibrates every word of the setup help below.
+
 ## What this skill outputs
 
 - A **live, public URL** — the clean root `https://<login>.github.io/` by default (a sub-route only if the root was taken) — hosting the portfolio.
-- A **publish record** at `.publish.json` (`{ host, owner, repo, url, branch }`) so re-publishing updates the same site instead of making a duplicate.
+- A **publish record** at `.publish.json` (`{ host, owner, repo, url, branch, published_at }`) so re-publishing updates the same site instead of making a duplicate — `published_at` (ISO timestamp) is refreshed on EVERY publish, so the update-check in hope-portfolio can tell when the live site is behind the local file.
 - The site lives in the **user's own account** — Hope hosts nothing and owns nothing. Data ownership, applied to hosting.
 
 ## HARD GUARDRAILS (these protect the user — never bypass)
 
 1. **One simple confirm before going public.** Never run a deploy / `gh repo create` until the user has said yes to a plain-English "this will be public, ok?" (step 5). Public is irreversible in spirit — recruiters and crawlers cache it instantly. This is the one question you always ask.
-2. **Publish an allowlist, never a folder.** Copy **only** the built portfolio HTML + its assets to a clean staging dir — plus, in step 6c, **exactly two** generated share images (`og-image.png`, `og-image-square.png`). `career.json`, notes, drafts, the `share-card*.html` sources, and the rest of the job-hunt folder **never** leave the machine.
+2. **Publish an allowlist, never a folder.** Copy **only** the built portfolio HTML + its assets to a clean staging dir — plus, in step 6c, **exactly two** generated share images (`og-image.png`, `og-image-square.png`). `career.json`, `user-story.md`, notes, drafts, the `share-card*.html` sources, and the rest of the job-hunt folder **never** leave the machine.
 3. **Scan before you push.** Grep the staging dir for secret shapes before any deploy. Contact info in a portfolio is intentional — don't block on it.
 4. **Set up *with* them, never *as* them.** If GitHub isn't ready, guide them through it warmly — they click the browser login; you can't and don't run `gh auth login` for them. Never silently auto-install global tools. And never cold-halt with a wall of commands — walk them through it like a patient friend, one step at a time.
 
@@ -182,7 +187,7 @@ gh api repos/<owner>/<repo>/pages --jq .status 2>/dev/null \
 # Poll until the build finishes (sleep ~5s between checks); "built" means live.
 gh api repos/<owner>/<repo>/pages --jq .status   # repeat until "built"
 ```
-Then write `.publish.json` with `{ host, owner, repo, url, branch }` (`url` = the **SITE_URL** from step 3b, `branch` = `main`).
+Then write `.publish.json` with `{ host, owner, repo, url, branch, published_at }` (`url` = the **SITE_URL** from step 3b, `branch` = `main`, `published_at` = now, ISO — e.g. `date -u +%Y-%m-%dT%H:%M:%SZ`).
 
 **If the chosen repo already exists** (step 3b Option 1 — replacing the existing `<login>.github.io`): skip `gh repo create` (it errors on an existing repo). Point the staging repo at it and replace the site:
 ```bash
@@ -196,7 +201,7 @@ The user explicitly chose to replace, so overwriting `main` is intended — `--f
 cd site
 git add -A && git commit -m "Update portfolio" && git push
 ```
-Same repo, same URL — never a second site for the same portfolio. Pages rebuilds on its own when the branch changes; no API calls needed.
+Same repo, same URL — never a second site for the same portfolio. Pages rebuilds on its own when the branch changes; no API calls needed. **Refresh `published_at` in `.publish.json` to now** (every publish, not just the first) — it's how the update-check knows whether the live site is behind the local file.
 
 ### 8. Return the URL
 Plainly and warmly: "Done — your portfolio is live at **<url>**. Copy it into any application. It can take a minute to appear the first time. And your live site is view-only for visitors — only you can change it, by republishing." Offer to open it for them. The page's own **Share** button now copies this exact link too.
@@ -224,6 +229,8 @@ Warm, calm, in control — you know how this works so they don't have to. Plain 
 
 Questions follow voice-guide rule #6 ("Choices, not blanks"): they come as numbered choices with a *(recommended)* pick; plain yes/no confirms — like step 5's — stay plain.
 
+Vocabulary follows voice-guide rule #4's "Meet them at their words": gauge the user's register from how *they* talk and match it — this skill's plain-words habit is that rule in action, not a separate one.
+
 > ✅ "I'll put this online for you — it'll be public so recruiters can see it, and your private files stay home. Ready?"
 > ✅ "Putting it online now… setting up the page… done. Here's your link: <url>"
 > ❌ "Select a host: GitHub Pages or Cloudflare? Public or private? Enter a repo name:"
@@ -239,4 +246,4 @@ Questions follow voice-guide rule #6 ("Choices, not blanks"): they come as numbe
 
 ## Hand-off
 
-After publishing, record the live URL on the user's `CuratedPortfolio` in the graph. The portfolio is now live — the user can drop the link into any application. If they want changes, offer to update the portfolio and re-publish (same repo, same URL). Recommend; never push.
+After publishing, record the live URL on the user's `CuratedPortfolio` in the graph. Also update `user-story.md` per `$PLUGIN_ROOT/references/user-story-guide.md`: append a dated one-liner to "The journey so far" — `- YYYY-MM-DD: Published to <url>` (re-publishes too) — groom on touch, and tell the user in one line. The portfolio is now live — the user can drop the link into any application. If they want changes, offer to update the portfolio and re-publish (same repo, same URL). Recommend; never push.
