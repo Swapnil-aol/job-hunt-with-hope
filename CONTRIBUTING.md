@@ -22,7 +22,7 @@ If you're unsure whether something violates one of these, **treat it as a violat
 
 ## 1. What Hope is (and what you're maintaining)
 
-Hope is a **free, open-source (MIT) Claude plugin for the job hunt.** It is for **job seekers** — anyone looking for work — not recruiters. It does **not** specialize in *finding* job listings (the career-ops plugin does that, and the two coexist — skills are namespaced). Hope's strength is helping a person **present themselves and apply well.**
+Hope is a **free, open-source (MIT) Claude plugin for the job hunt.** It is for **job seekers** — anyone looking for work — not recruiters. It does **not** specialize in *finding* job listings — other plugins do that, and they coexist with Hope (skills are namespaced). Hope's strength is helping a person **present themselves and apply well.**
 
 The hunt is organized as **milestones**, not pipelines — seeker-centric, not item-centric. **Twelve skills** live under `skills/<name>/SKILL.md`:
 
