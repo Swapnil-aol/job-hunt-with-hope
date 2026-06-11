@@ -92,7 +92,7 @@ gh api "repos/<login>/<login>.github.io" --jq '.name + " — " + (.description /
   > "Heads up — you already have a site at **`<login>.github.io`** ([show its description/repo]). Where should your portfolio go?
   >  **1. Update that site with your portfolio** *(recommended)* — keeps the clean link `https://<login>.github.io/`. This **replaces** what's there.
   >  **2. Use a separate page** — lives at `https://<login>.github.io/<name>-portfolio/`, and your existing site stays untouched.
-  >  (Or name a repo yourself.)"
+  >  (Or name the web address yourself — tell me in your own words.)"
   - **Option 1** → repo `<login>.github.io`, **SITE_URL = root**, and the push **overwrites** the existing site — treat this as the irreversible case: step 5's confirm must spell out *"this replaces your current `<login>.github.io` site."*
   - **Option 2** → repo `<login>-portfolio` (auto-clean name), **SITE_URL = `https://<login>.github.io/<login>-portfolio/`**.
 
@@ -206,9 +206,9 @@ git add -A && git commit -m "Update portfolio" && git push
 Same repo, same URL — never a second site for the same portfolio. Pages rebuilds on its own when the branch changes; no API calls needed. **Refresh `published_at` in `.publish.json` to now** (every publish, not just the first) — it's how the update-check knows whether the live site is behind the local file.
 
 ### 8. Return the URL
-Plainly and warmly: "Done — your portfolio is live at **<url>**. Copy it into any application. It can take a minute to appear the first time. And your live site is view-only for visitors — only you can change it, by republishing." Offer to open it for them. The page's own **Share** button now copies this exact link too.
+Plainly and warmly: "Done — your portfolio is live at **<url>**. Copy it into any application. It can take a minute to appear the first time. And your live site is view-only for visitors — only you can change it, by republishing." Offer to open it for them. The page's own **Share** button now copies this exact link too — and if they ask where that button is, point rather than describe: `<url>#spotlight=share` makes it glow on the live page (the spotlight hash works on the published link).
 
-If the share images shipped (step 6c), add — plainly: "Paste this link on LinkedIn and it shows your share card. og-image-square.png is yours to attach to posts." (The square image lives in `site/` and at `<SITE_URL>og-image-square.png`.) If they later say the LinkedIn preview looks stale or missing, point them to LinkedIn's **Post Inspector** — https://www.linkedin.com/post-inspector/ — paste the link there and hit Inspect to force a fresh scrape; LinkedIn caches previews for about a week, and posts already published keep their old card. If the images were skipped (no Chrome), don't promise a card — the link still works everywhere, just without the picture preview.
+If the share images shipped (step 6c), add — plainly: "Paste this link on LinkedIn and it shows the preview picture people see when you share your link. There's also a square version of that picture — I can show you where it is — that's yours to attach straight to posts." (The square image lives in `site/` and at `<SITE_URL>og-image-square.png`.) If they later say the LinkedIn preview looks stale or missing, point them to LinkedIn's **Post Inspector** — https://www.linkedin.com/post-inspector/ — paste the link there and hit Inspect to force a fresh scrape; LinkedIn caches previews for about a week, and posts already published keep their old card. If the images were skipped (no Chrome), don't promise a card — the link still works everywhere, just without the picture preview.
 
 ### 9. Custom domain (only if they ask)
 If they raise their own domain, ask which address they want — numbered, recommended first (voice-guide rule #6):
@@ -230,6 +230,8 @@ Then write the `CNAME` file (commit, push) and **print** the exact DNS records f
 Warm, calm, in control — you know how this works so they don't have to. Plain words, one step at a time, never breezy about the public action.
 
 Questions follow voice-guide rule #6 ("Choices, not blanks"): they come as numbered choices with a *(recommended)* pick; plain yes/no confirms — like step 5's — stay plain.
+
+**That binds improvised questions too:** a clarification, a quick check, anything about to go out as free prose — stop and reformat it as the numbered menu or a plain yes/no. Free-prose questions do not exist in Hope's voice.
 
 Vocabulary follows voice-guide rule #4's "Meet them at their words": gauge the user's register from how *they* talk and match it — this skill's plain-words habit is that rule in action, not a separate one.
 

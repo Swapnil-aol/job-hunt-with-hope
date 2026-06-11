@@ -2025,6 +2025,20 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
    snapping (mismatched list lengths animate discretely). */
 @keyframes tl-target-pulse { 0%, 65% { box-shadow: var(--accent-orange-glow), 0 0 0 2px var(--accent-orange); } 100% { box-shadow: 0 4px 14px transparent, 0 0 0 2px transparent; } }
 .tl-flash { animation: tl-target-pulse 1.2s ease-out; }
+/* THE SPOTLIGHT — .hope-spotlight, applied by the #spotlight=<key> hash
+   directive (registry IIFE in portfolio.js). Same token glow as
+   tl-target-pulse above — no new colors — but ~3 soft pulses over ~3s
+   (50% peak per cycle × 3 iterations) instead of one flash; the JS removes
+   the class when the run ends. Print is inert by construction: the directive
+   only plays on an interactive load, the class lives ~3s, and the print
+   blocks already zero the glow token. Both frames carry two shadows so the
+   fade interpolates (same doctrine as tl-target-pulse). The !important is
+   load-bearing: pane targets carry .section-pane.active (0,2,0), whose
+   materialize shorthand would otherwise replace this animation and the
+   spotlight would scroll but never glow. Reduced-motion stays safe — the
+   #throughline media rule outranks this (1,0,0 vs 0,1,0, both !important). */
+@keyframes hope-spotlight-pulse { 0%, 100% { box-shadow: 0 4px 14px transparent, 0 0 0 2px transparent; } 50% { box-shadow: var(--accent-orange-glow), 0 0 0 2px var(--accent-orange); } }
+.hope-spotlight { animation: hope-spotlight-pulse 1s ease-in-out 3 !important; }
 /* Hover mini-card (T5) — token panel. Lives at BODY level: the identity
    card's overflow:hidden plus its materialize transform (fill-mode keeps a
    computed transform, which makes the card the containing block even for

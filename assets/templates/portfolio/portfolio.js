@@ -355,6 +355,75 @@
     });
   });
 
+  // ── THE SPOTLIGHT — show-before-you-ask (#spotlight=<key> hash directive) ──
+  // AUTHORING NOTE — Hope's SKILLS use this to POINT while asking: when a
+  // question is about something visual, the skill hands the user this page's
+  // URL with #spotlight=<key> appended (file://, localhost, or the published
+  // link — a location hash needs no server), says in plain words what will be
+  // glowing, THEN asks. Visitors who never use the hash never see any of
+  // this. Registry keys → targets:
+  //   timeline → #throughline · highlights → #pane-overview (tile activated
+  //   first) · share → #share-btn · pdf → #pdf-btn · photo → the photo box ·
+  //   summary → the summary paragraph · experience / skills / education /
+  //   certifications / projects → that pane (tile activated first).
+  // Plays on load AND on hashchange: scroll into view (smooth; auto under
+  // prefers-reduced-motion), then ~3 soft pulses over ~3s via .hope-spotlight
+  // (token glow — beside the tl-flash block in portfolio.css). Cleanup is
+  // total: the class is removed when the run ends and the hash is cleared via
+  // history.replaceState — no URL pollution, no history entry, and nothing
+  // for print to see (interactive-only, the class lives ~3s).
+  (function () {
+    var SPOTLIGHT = {
+      timeline: { sel: '#throughline' },
+      highlights: { sel: '#pane-overview', pane: 'overview' },
+      share: { sel: '#share-btn' },
+      pdf: { sel: '#pdf-btn' },
+      photo: { sel: '#photo-upload' },
+      summary: { sel: '.summary' },
+      experience: { sel: '.section-pane[data-pane="experience"]', pane: 'experience' },
+      skills: { sel: '.section-pane[data-pane="skills"]', pane: 'skills' },
+      education: { sel: '.section-pane[data-pane="education"]', pane: 'education' },
+      certifications: { sel: '.section-pane[data-pane="certifications"]', pane: 'certifications' },
+      projects: { sel: '.section-pane[data-pane="projects"]', pane: 'projects' }
+    };
+    var spotEl = null;
+    var spotTimer = 0;
+    function clearSpotlightHash() {
+      // replaceState, not location.hash = '' — no history entry, no stray '#'.
+      try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+    }
+    function playSpotlight() {
+      var m = /^#spotlight=([a-z]+)$/.exec(window.location.hash || '');
+      var entry = m && SPOTLIGHT.hasOwnProperty(m[1]) ? SPOTLIGHT[m[1]] : null;
+      if (!entry) return; // not a spotlight hash — plain anchors (#pane-overview) stay untouched
+      var el = document.querySelector(entry.sel);
+      if (!el) { clearSpotlightHash(); return; } // feature not in this build (e.g. show_summary stripped)
+      if (entry.pane) {
+        // Activate the tile via the EXISTING section-grid code path — the
+        // button's own click handler owns the tab + pane class state, the
+        // same doctrine as the throughline's click-navigate.
+        var paneBtn = document.querySelector('.section-btn[data-section="' + entry.pane + '"]');
+        if (paneBtn) paneBtn.click();
+      }
+      if (el.getClientRects().length === 0) { clearSpotlightHash(); return; } // hidden (e.g. empty throughline) — directive is inert
+      var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+      if (spotTimer) { clearTimeout(spotTimer); spotTimer = 0; }
+      if (spotEl && spotEl !== el) spotEl.classList.remove('hope-spotlight');
+      el.classList.remove('hope-spotlight');
+      void el.offsetWidth; // restart the pulse on a repeated directive
+      el.classList.add('hope-spotlight');
+      spotEl = el;
+      spotTimer = setTimeout(function () { el.classList.remove('hope-spotlight'); spotTimer = 0; spotEl = null; }, 3200);
+      clearSpotlightHash();
+    }
+    // One tick deferred: the throughline strip is built LATER in this same
+    // synchronous pass (its IIFE below un-hides #throughline), so targets are
+    // resolved only after the outer IIFE has finished.
+    window.setTimeout(playSpotlight, 0);
+    window.addEventListener('hashchange', playSpotlight);
+  })();
+
   // ── WIDE-SCREEN RAILS (≥1440px) — minimal JS relocation, one node, no clones ──
   // AUTHORING NOTE — approach: the summary lives INSIDE .identity-card, whose
   // overflow:hidden + border/background chrome make a pure-CSS escape

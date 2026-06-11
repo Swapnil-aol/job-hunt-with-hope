@@ -274,7 +274,7 @@ printf 'data:image/jpeg;base64,%s' "$(base64 < "$OUT" | tr -d '\n')"
 - Put the `data:image/jpeg;base64,…` string into `{{photo_data_url}}`.
 - Set `{{photo_class}}` to ` has-photo` (note the leading space) so the photo renders and the "add a photo" prompt is hidden.
 
-**4 — No photo found? Leave the upload prompt intact.** If there's no headshot and the user doesn't point you at one, substitute `{{photo_data_url}}` with an empty string and `{{photo_class}}` with an empty string. The card then shows the dashed "Photo" upload box exactly as before — the no-photo case must not break.
+**4 — No photo found? Leave the upload prompt intact.** If there's no headshot and the user doesn't point you at one, substitute `{{photo_data_url}}` with an empty string and `{{photo_class}}` with an empty string. The card then shows the dashed "Photo" upload box exactly as before — the no-photo case must not break. When you then invite a photo at hand-over, the ask is a plain yes/no ("want your photo in before this goes out?") and you point instead of describing: hand `<preview-url>#spotlight=photo` — "the glowing box is where your photo goes; drop an image in this folder and I'll bake it in."
 
 Either way the localStorage "change your photo" widget stays in the file as a fallback the user can use after publishing.
 
@@ -318,6 +318,10 @@ Most portfolios should fit in 2–3 screens of vertical scroll on desktop. Long-
 
 Every question this skill asks follows **voice-guide rule #6 — "Choices, not blanks"**: numbered options (2–4), exactly one "(recommended)" with a one-clause why, free text always honored as the escape hatch. Numbered so the user can answer "2". Per the rule, **weighty or personal questions also carry a final "💬 Chat about this first" option** — picking it means Hope talks it through before deciding; it complements the free-text escape hatch, it doesn't replace it. In this skill that's the Overview opt-in and the traveler picker below, and the update menu (see "Updating — always start with the menu"); the "What's off?" diagnostic stays chat-option-free — it's a scannable checklist, and chat just adds noise there.
 
+**This binds improvised questions too.** A clarification, a quick check, anything you're about to ask as free prose — stop and reformat it as the numbered menu (or a plain yes/no). Free-prose questions do not exist in Hope's voice.
+
+**Show, then ask — the spotlight.** When a question is about something visual and there's a viewable copy to point at (the local preview from "Show it — then hand over the keys", or the live link), point first: hand the page URL with `#spotlight=<key>` appended and say in plain words what will glow — "open this; the part glowing at the bottom is what I'm asking about" — then ask the menu. The keys (the registry lives in the template's `portfolio.js`): `timeline` · `highlights` · `share` · `pdf` · `photo` · `summary` · `experience` · `skills` · `education` · `certifications` · `projects`. The hash works over `file://`, the local server, and the published link alike, and clears itself once the glow plays. On a first-ever generation there's nothing to point at yet — plain words carry the question alone.
+
 If the user has provided a target Job, just confirm: "Generating a portfolio targeted at {company} for {role}. The angle I'm taking is {angle in one sentence}. Continue?" (A plain yes/no confirm IS rule-#6 compliant — don't pad it with fake options.)
 
 If no target Job, ask as a choice:
@@ -339,18 +343,20 @@ If the answer is "general", scaffold the constraint question instead of leaving 
 
 **Overview app opt-in — ask once per portfolio.** If `Person.headline_stats` exist and this CuratedPortfolio has no recorded `show_summary` decision yet, ask before first including the app:
 
-> Want an Overview tab opening the section grid — your proudest numbers and a line of interests, the first thing a recruiter sees?
+> Want a highlights panel at the top of your page — your proudest numbers and a line of interests, the first thing a recruiter sees?
 > 1. **Show it** (recommended — recruiters skim, and your strongest numbers deserve the first screen)
-> 2. **Skip it** — open straight on your Experience
+> 2. **Skip it** — your page opens straight on your Experience section
 > 3. **💬 Chat about this first** — we'll talk through what a recruiter should see up front before deciding
 >
 > Or tell me in your own words.
+
+Show before asking when there's something to show: if a generated copy that includes the panel is already viewable, hand `<preview-url>#spotlight=highlights` first — "the panel glowing at the top is the one I mean" — then the menu. No viewable copy yet (or the copy has no panel)? The plain description above carries it.
 
 Record the answer on the CuratedPortfolio node as `"show_summary": true|false`; it's a per-portfolio presentation choice, so don't re-ask while iterating on the same portfolio — and an existing decision is honored when regenerating (see "Updating an existing portfolio" below). If the Person has **no** `headline_stats` and no `interests`, don't ask at all — skip the app silently (leave `show_summary` absent; the conditional blocks strip with zero residue).
 
 **Traveler picker — ask once per portfolio.** The Throughline's playhead carries a glyph — the traveler — and it's the user's to choose. If this CuratedPortfolio has no recorded `timeline_traveler` yet, ask at generation:
 
-> Your timeline has a little traveler — the glyph that rides along your career. Who's yours?
+> The moving timeline at the bottom of your page has a little character that travels along it as your career plays. Who should yours be?
 > 1. **The glow dot** (recommended — calm, classic, lets the work do the talking)
 > 2. **One of the kept seven** — paper plane, car, train, sailboat, bicycle, rocket, footprints
 > 3. **Find one that's me** — I'll suggest a few from what I know you love, and go get it
@@ -358,6 +364,8 @@ Record the answer on the CuratedPortfolio node as `"show_summary": true|false`; 
 > 5. **💬 Chat about this first** — we'll talk about what fits before deciding
 >
 > Or tell me in your own words.
+
+Point before asking when you can: with a viewable copy up (an earlier generation, or the live link), hand `<preview-url>#spotlight=timeline` first — "the strip glowing at the bottom is the timeline I mean" — then the menu. First-ever portfolio: the plain description above carries it.
 
 - **3 — Find one.** Recommend candidates from `Person.interests` (a trail runner hears footprints first; a sailor, the sailboat — or something better off the shelf). When it's not in the bundled seven, fetch it via the same announce → fetch → cache → inline protocol as "Icons for links — bundled first, fetched when missing" above; the brand-icon law applies (monochrome single-path, `viewBox="0 0 24 24"`, `fill="currentColor"` — canon §6).
 - **4 — Make one.** Author a tiny single-path SVG by hand to the same law, save it to the project's `career-graph/assets/icons/`, and inline it.
@@ -377,6 +385,8 @@ After first generation, **always ask "What's off?"** Don't ask "do you like it?"
 > 4. **Length** — too much scroll, or too thin
 > 5. **Theme** — light vs. dark default
 > 6. **Phrasing** — a specific line in a card reads wrong
+>
+> Tell me the number — or open <preview-url>#spotlight=highlights to see each part glow first (swap `highlights` for `timeline`, `summary`, `experience`, `skills`, `projects`, `share`, or `pdf`).
 >
 > Or tell me in your own words.
 
@@ -400,7 +410,7 @@ The portfolio is the payoff. Don't just save a file and move on — **present it
    ```
 
    Use `/usr/bin/python3` (the system interpreter), not a bare `python`/`python3` that may be a pyenv shim. Pin `--directory` to the absolute temp path. Never serve from the user's project folder under `~/Documents`.
-5. **Point out Share & Save as PDF.** The portfolio carries a **Share** button that opens a small share menu — **Copy link · LinkedIn · X · WhatsApp · Email** (the social links go live once published; Copy keeps its "Copied!" feedback) — and a **Save as PDF** button that exports the **résumé**: a chooser for style (classic / modern / compact), font, and fit, with a **hard readability floor — body text never drops below 10pt**. The portfolio-PDF chooser is gated for the next release — the live page IS the portfolio, and **Cmd+P still prints it natively**. Tell the user plainly: "Save as PDF prints an ATS-clean résumé from this same file — pick a style, font, and fit; it never shrinks body text below 10pt. The page itself is your portfolio: share the link, or Cmd+P to print it." Your last choice is remembered for next time. Name both buttons so the user knows they're there.
+5. **Point out Share & Save as PDF.** The portfolio carries a **Share** button that opens a small share menu — **Copy link · LinkedIn · X · WhatsApp · Email** (the social links go live once published; Copy keeps its "Copied!" feedback) — and a **Save as PDF** button that exports the **résumé**: a chooser for style (classic / modern / compact), font, and fit, with a **hard readability floor — body text never drops below 10pt**. The portfolio-PDF chooser is gated for the next release — the live page IS the portfolio, and **Cmd+P still prints it natively**. Tell the user plainly: "Save as PDF gives you a résumé that application systems read perfectly — pick a style, font, and fit; the text never gets too small to read. The page itself is your portfolio: share the link, or Cmd+P to print it." Your last choice is remembered for next time. Name both buttons so the user knows they're there.
 
 ## Hand-off — recommend publishing, and own the setup
 
