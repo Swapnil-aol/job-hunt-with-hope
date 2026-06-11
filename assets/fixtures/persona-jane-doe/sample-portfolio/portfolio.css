@@ -2064,37 +2064,82 @@ body.print-continuous .item-meta .hex-kpi:nth-child(n+5) { display: inline-flex;
   .tl-node.tl-below.tl-far .tl-node-label { top: calc(100% + 78px); }
 }
 
-/* ─── H1 · Wide-screen identity header ──────────────────────────────────
-   MEDIA query, not container query — same judgment as the template: .wrap
-   caps the card's width at 880px, so the card's own inline-size never
-   crosses a useful threshold; what changes is the VIEWPORT. SAMPLE OFFSET:
-   the template flips at 1100px, but this sample seats a 270px demo-controls
-   column + 18px gap beside the portfolio column, so the card reaches the
-   same geometry 288px later — 1100 + 288 = 1388px. At 1388px the .layout is
-   already at its 1240px cap, so the card sits at its full 880px, exactly
-   what the template's card measures at its own breakpoint. Three columns:
-   LEFT the stats block (stacked vertically, mono); CENTER photo + name +
-   headline + summary (hierarchy unchanged); RIGHT the contact links
-   (stacked, right-aligned). Below 1388px not one rule here applies — the
-   narrow layout stays byte-identical. The LIVE pill pins to the card's
-   top-right at all widths (absolute against .identity-row, whose
-   position:relative comes from the .identity-card > * rule).
-   display:contents lifts .identity-info's children into the card grid — the
-   wrapper contributes no box of its own. Applies to every persona's card;
-   only the active one is visible. */
-@media (min-width: 1388px) {
-  .identity-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 3fr) minmax(150px, 1fr); grid-template-rows: auto auto auto; column-gap: 32px; align-items: start; }
-  .identity-info { display: contents; }
-  .photo-upload { grid-column: 2; grid-row: 1; justify-self: center; }
-  .identity-top { grid-column: 2; grid-row: 2; justify-content: center; margin-top: 12px; }
-  .identity-name-block { flex: 0 1 auto; text-align: center; }
-  .live-pill { position: absolute; top: 0; right: 0; }
-  .stats-row { grid-column: 1; grid-row: 1 / span 3; align-self: center; flex-direction: column; gap: 12px; margin-top: 0; }
-  .stats-row > span { display: block; }
-  .stats-row .sep { display: none; }
-  .stats-row strong { display: block; font-size: 19px; line-height: 1.1; }
-  .contact-row { grid-column: 3; grid-row: 1 / span 3; align-self: center; justify-self: end; flex-direction: column; align-items: flex-end; gap: 9px; margin-top: 0; }
-  .summary { grid-column: 2; grid-row: 3; text-align: center; margin: 10px auto 0; }
+/* ─── H1 · Wide-screen rails (≥1792px) ──────────────────────────────────
+   THE RAILS CONTRACT — mirror of the template block (see
+   assets/templates/portfolio/portfolio.css; the v0.8.0 in-card 3-column
+   header reflow is REVERTED — the identity card renders its original
+   layout at every width): at wide viewports the summary floats in a quiet
+   LEFT rail and the section-grid becomes a sticky RIGHT rail. The
+   portfolio column (identity card + panes + footer) keeps its exact
+   narrow geometry — the rails occupy only viewport space that was empty
+   margin before, and the identity card gains nothing inside it.
+   APPROACH — CSS grid on .wrap + ONE JS relocation (authoring note in
+   portfolio.js): the section-grid is already a direct .wrap child, so the
+   grid below re-columns it with zero DOM changes — its click wiring and
+   the Overview default-open logic never notice. The summaries alone (one
+   per persona, the ORIGINAL nodes, never cloned) are moved by JS into a
+   .summary-rail <aside>, because their in-card slot is unreachable by CSS
+   alone: .identity-card's overflow:hidden + border/background chrome
+   would have to dissolve (display:contents) to let a grid lift them out —
+   the exact reverted v0.8.0 mistake this section replaces.
+   SAMPLE BREAKPOINT 1792px — the template flips at 1440px, but this
+   sample (a) seats a 270px demo-controls column + 18px gap beside the
+   portfolio column and (b) carries its 24px side padding on .layout
+   instead of .wrap, so the center column is the full 880px (not the
+   template's 832px content box). Floor: 880 center + 2×250 rail min
+   + 2×24 gap (= 1428px .wrap) + 270 demo + 18 gap + 48 .layout padding
+   = 1764px before rails fit WITHOUT squeezing the portfolio column;
+   1792 (16-inch-laptop logical width) is the first standard viewport
+   tier above that floor, and minmax() absorbs the slack at the
+   threshold. Rails flex 250→280px, capped by the raised .layout cap.
+   DEMO-CONTROLS COLLISION — the configurator panel ALSO lives in the
+   left margin, but as .layout's leftmost FLEX column, outside .wrap; the
+   summary rail is .wrap's own first GRID column. They never overlap: at
+   ≥1792px the page reads demo-controls | summary rail | portfolio |
+   apps rail — horizontally offset, and the breakpoint math above already
+   reserves the demo column's 288px. Below the breakpoint the panel
+   behaves exactly as today.
+   VIEWPORT media query — and explicitly gated OFF for the whole export
+   lifecycle: the continuous engine pins the BODY to 816px and resume
+   auto-fit pins it to ~710px, but min-width media queries read the
+   VIEWPORT, which stays wide — so every rule here carries
+   body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio).
+   Real print never matches anyway (the page box is 816px < 1792), so all
+   print modes keep the single-column flow with the summary printed
+   in-card (portfolio.js moves it home on beforeprint and before the
+   continuous measurement). Below 1792px not one rule here applies — the
+   narrow rendering stays byte-identical to the single-column layout. */
+@media (min-width: 1792px) {
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .layout {
+    max-width: 1824px; /* 24 pad + 270 demo + 18 gap + 1488 wrap + 24 pad */
+  }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap {
+    max-width: 1488px; /* 880 center + 2×280 rail + 2×24 gap */
+    display: grid;
+    grid-template-columns: minmax(250px, 1fr) minmax(0, 880px) minmax(250px, 1fr);
+    column-gap: 24px;
+  }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > * { grid-column: 2; min-width: 0; }
+  /* LEFT rail — the relocated summaries (one per persona; the active one
+     shows, the rest stay display:none via the [data-persona-hidden]
+     machinery), top-aligned with the identity card (row 2 IS the card's
+     row — hidden persona cards are display:none and generate no grid
+     items, so the active card is always the 2nd rendered child after the
+     topbar; the long span parks any rail overflow in empty zero-height
+     implicit rows, so neither rail inflates the card's row). Quiet on
+     purpose: no card chrome — a thin orange ledge over a mono ABOUT
+     eyebrow, then the same summary text. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .summary-rail { grid-column: 1; grid-row: 2 / span 24; align-self: start; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail::before { content: "About"; display: block; width: max-content; border-top: 2px solid var(--accent-orange); padding-top: 7px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .summary { margin: 10px 0 0; max-width: none; font-size: 13px; }
+  /* RIGHT rail — the section-grid itself (never moved, never duplicated):
+     tiles stack single-column, same anatomy and behavior, and the rail
+     rides sticky so app navigation stays in reach while the center column
+     scrolls. align-self:start is load-bearing — a default-stretched grid
+     item fills its whole area and leaves sticky no room to travel. top
+     offset matches the .layout top padding (and the demo panel's own
+     sticky offset). */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .section-grid { grid-column: 3; grid-row: 2 / span 24; align-self: start; position: sticky; top: 24px; grid-template-columns: 1fr; margin-bottom: 0; }
 }
 
 /* THE THROUGHLINE on the continuous canvas — mirror of the print block above
@@ -2112,16 +2157,3 @@ body.print-continuous .tl-node.tl-clamp-end .tl-node-label { text-align: right; 
 body.print-continuous .tl-node.tl-far .tl-node-label { bottom: calc(100% + 70px); }
 body.print-continuous .tl-node.tl-below .tl-node-label { bottom: auto; top: calc(100% + 18px); }
 body.print-continuous .tl-node.tl-below.tl-far .tl-node-label { top: calc(100% + 78px); }
-/* The wide-screen 3-col header must not leak into the 816px continuous
-   canvas — restore the classic row, exactly as the mobile-leak guards above
-   do. */
-body.print-continuous .identity-row { display: flex; }
-body.print-continuous .identity-info { display: block; }
-body.print-continuous .identity-top { justify-content: space-between; margin-top: 0; }
-body.print-continuous .identity-name-block { text-align: left; }
-body.print-continuous .live-pill { position: static; }
-body.print-continuous .stats-row { flex-direction: row; gap: 6px; margin-top: 8px; align-self: auto; }
-body.print-continuous .stats-row > span { display: inline; }
-body.print-continuous .stats-row .sep { display: inline; }
-body.print-continuous .stats-row strong { display: inline; font-size: inherit; }
-body.print-continuous .contact-row { flex-direction: row; align-items: normal; gap: 4px 16px; margin-top: 10px; align-self: auto; justify-self: auto; }

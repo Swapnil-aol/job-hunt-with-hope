@@ -861,33 +861,6 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
   .tl-node.tl-below.tl-far .tl-node-label { top: calc(100% + 78px); }
 }
 
-/* ─── H1 · Wide-screen identity header (≥1100px) ────────────────────────
-   MEDIA query, not container query — judgment: .wrap caps the card's width
-   at 880px at every viewport, so the card's own inline-size never crosses a
-   useful threshold; what actually changes at 1100px is the VIEWPORT, which
-   is exactly what a media query reads. Three columns: LEFT the stats block
-   (stacked vertically, mono); CENTER photo + name + headline + summary
-   (hierarchy unchanged); RIGHT the contact links (stacked, right-aligned).
-   Below 1100px not one rule here applies — the narrow layout stays
-   byte-identical. The LIVE pill pins to the card's top-right at all widths
-   (absolute against .identity-row, whose position:relative comes from the
-   .identity-card > * rule). display:contents lifts .identity-info's children
-   into the card grid — the wrapper contributes no box of its own. */
-@media (min-width: 1100px) {
-  .identity-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 3fr) minmax(150px, 1fr); grid-template-rows: auto auto auto; column-gap: 32px; align-items: start; }
-  .identity-info { display: contents; }
-  .photo-upload { grid-column: 2; grid-row: 1; justify-self: center; }
-  .identity-top { grid-column: 2; grid-row: 2; justify-content: center; margin-top: 12px; }
-  .identity-name-block { flex: 0 1 auto; text-align: center; }
-  .live-pill { position: absolute; top: 0; right: 0; }
-  .stats-row { grid-column: 1; grid-row: 1 / span 3; align-self: center; flex-direction: column; gap: 12px; margin-top: 0; }
-  .stats-row > span { display: block; }
-  .stats-row .sep { display: none; }
-  .stats-row strong { display: block; font-size: 19px; line-height: 1.1; }
-  .contact-row { grid-column: 3; grid-row: 1 / span 3; align-self: center; justify-self: end; flex-direction: column; align-items: flex-end; gap: 9px; margin-top: 0; }
-  .summary { grid-column: 2; grid-row: 3; text-align: center; margin: 10px auto 0; }
-}
-
 /* THE THROUGHLINE on the continuous canvas — mirror of the print block above
    (the continuous height is measured ON SCREEN, so the measured layout must
    BE the printed layout — same doctrine as the rest of this section). */
@@ -903,16 +876,59 @@ body.print-continuous .tl-node.tl-clamp-end .tl-node-label { text-align: right; 
 body.print-continuous .tl-node.tl-far .tl-node-label { bottom: calc(100% + 70px); }
 body.print-continuous .tl-node.tl-below .tl-node-label { bottom: auto; top: calc(100% + 18px); }
 body.print-continuous .tl-node.tl-below.tl-far .tl-node-label { top: calc(100% + 78px); }
-/* The ≥1100px 3-col header must not leak into the 816px continuous canvas —
-   restore the classic row, exactly as the mobile-leak guards above do. */
-body.print-continuous .identity-row { display: flex; }
-body.print-continuous .identity-info { display: block; }
-body.print-continuous .identity-top { justify-content: space-between; margin-top: 0; }
-body.print-continuous .identity-name-block { text-align: left; }
-body.print-continuous .live-pill { position: static; }
-body.print-continuous .stats-row { flex-direction: row; gap: 6px; margin-top: 8px; align-self: auto; }
-body.print-continuous .stats-row > span { display: inline; }
-body.print-continuous .stats-row .sep { display: inline; }
-body.print-continuous .stats-row strong { display: inline; font-size: inherit; }
-body.print-continuous .contact-row { flex-direction: row; align-items: normal; gap: 4px 16px; margin-top: 10px; align-self: auto; justify-self: auto; }
-body.print-continuous .summary { text-align: left; margin: 12px 0 0; }
+
+/* ─── H1 · Wide-screen rails (≥1440px) ──────────────────────────────────
+   THE RAILS CONTRACT: at wide viewports the summary floats in a quiet LEFT
+   rail and the section-grid becomes a sticky RIGHT rail. The portfolio
+   column (identity card + panes + footer) keeps its exact narrow geometry —
+   the rails occupy only viewport space that was empty margin before, and
+   the identity card gains nothing inside it.
+   APPROACH — CSS grid on .wrap + ONE JS relocation (authoring note in
+   portfolio.js): the section-grid is already a direct .wrap child, so the
+   grid below re-columns it with zero DOM changes — its click wiring and the
+   Overview default-open logic never notice. The summary alone is moved by
+   JS into a .summary-rail <aside>, because its in-card slot is unreachable
+   by CSS alone: .identity-card's overflow:hidden + border/background chrome
+   would have to dissolve (display:contents) to let a grid lift it out —
+   the exact reverted v0.8.0 mistake this section replaces.
+   BREAKPOINT 1440px — the center column needs its full 832px content width
+   (880px .wrap max-width minus 48px padding) + 2 × 250px rail minimum
+   + 2 × 24px gaps = 1428px before rails fit WITHOUT squeezing the portfolio
+   column; 1440 is the first standard viewport tier above that floor (the
+   logical width of common 13/14-inch laptops), and minmax(0, 832px) lets
+   the center absorb scrollbar-width slack right at the threshold instead
+   of overflowing. Rails flex 250→280px, capped by the 1488px max-width.
+   VIEWPORT media query — and explicitly gated OFF for the whole export
+   lifecycle: the continuous engine pins the BODY to 816px and resume
+   auto-fit pins it to ~710px, but min-width media queries read the
+   VIEWPORT, which stays wide — so every rule here carries
+   body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio).
+   Real print never matches anyway (the page box is 816px < 1440), so all
+   print modes keep the single-column flow with the summary printed in-card
+   (portfolio.js moves it home on beforeprint and before the continuous
+   measurement). Below 1440px not one rule here applies — the narrow
+   rendering stays byte-identical to the single-column layout. */
+@media (min-width: 1440px) {
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap {
+    max-width: 1488px; /* 832 center + 2×280 rail + 2×24 gap + 48 padding */
+    display: grid;
+    grid-template-columns: minmax(250px, 1fr) minmax(0, 832px) minmax(250px, 1fr);
+    column-gap: 24px;
+  }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > * { grid-column: 2; min-width: 0; }
+  /* LEFT rail — the relocated summary, top-aligned with the identity card
+     (row 2 IS the card's row; the long span parks any rail overflow in
+     empty zero-height implicit rows, so neither rail inflates the card's
+     row). Quiet on purpose: no card chrome — a thin orange ledge over a
+     mono ABOUT eyebrow, then the same summary text. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .summary-rail { grid-column: 1; grid-row: 2 / span 24; align-self: start; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail::before { content: "About"; display: block; width: max-content; border-top: 2px solid var(--accent-orange); padding-top: 7px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .summary { margin: 10px 0 0; max-width: none; font-size: 13px; }
+  /* RIGHT rail — the section-grid itself (never moved, never duplicated):
+     tiles stack single-column, same anatomy and behavior, and the rail
+     rides sticky so app navigation stays in reach while the center column
+     scrolls. align-self:start is load-bearing — a default-stretched grid
+     item fills its whole area and leaves sticky no room to travel. top
+     offset matches the .wrap top padding. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .section-grid { grid-column: 3; grid-row: 2 / span 24; align-self: start; position: sticky; top: 24px; grid-template-columns: 1fr; margin-bottom: 0; }
+}

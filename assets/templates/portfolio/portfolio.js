@@ -215,6 +215,12 @@
   };
   var enableContinuousPrint = function () {
     disableContinuousPrint();
+    // The 816px body pin below does NOT un-match the ≥1440px viewport media
+    // query (MQs read the viewport, not body width) — the rails CSS is gated
+    // off via body:not(.print-continuous), but the relocated summary NODE
+    // must also be back in the identity card before the height is measured.
+    // unmountRails is a hoisted function declaration (rails block below).
+    unmountRails();
     document.body.classList.add('print-continuous');
     document.body.style.width = CONT_PAGE_W_PX + 'px'; // measure at print width
     void document.body.offsetHeight;                   // force reflow before measuring
@@ -348,6 +354,61 @@
       head.closest('.item-card').classList.toggle('expanded');
     });
   });
+
+  // ── WIDE-SCREEN RAILS (≥1440px) — minimal JS relocation, one node, no clones ──
+  // AUTHORING NOTE — approach: the summary lives INSIDE .identity-card, whose
+  // overflow:hidden + border/background chrome make a pure-CSS escape
+  // impossible without dissolving the card (display:contents — the reverted
+  // v0.8.0 mistake). So: minimal JS relocation on a matchMedia listener. At
+  // ≥1440px the summary <p> (the ORIGINAL node — never cloned) moves into a
+  // .summary-rail <aside> appended to .wrap; below the breakpoint the summary
+  // moves back to its original slot — it is .identity-info's LAST child, so a
+  // plain appendChild restores the exact generated markup — and the aside is
+  // removed from the DOM entirely, leaving the narrow document identical to
+  // what the generator wrote. The section-grid is NEVER moved: it is already
+  // a direct .wrap child, so the rails grid in portfolio.css re-columns it in
+  // place — its click wiring, the Overview default-open promotion above, and
+  // the {{#show_summary}}-stripped 5-tile variant all work untouched.
+  // This block runs synchronously here (classic script, end of body) — same
+  // before-first-paint doctrine as the Overview promotion above, so there is
+  // no relocation flash at load. The MQ 'change' listener covers resize in
+  // BOTH directions. Print stays single-column with the summary in-card:
+  // beforeprint moves it home (afterprint re-syncs), and the continuous
+  // engine calls unmountRails() before measuring — the 816px body pin does
+  // NOT un-match a viewport media query, so the DOM must be restored
+  // explicitly there (the CSS side is gated with body:not(...) classes).
+  var railsMql = window.matchMedia ? window.matchMedia('(min-width: 1440px)') : null;
+  var railSummary = document.querySelector('.identity-card .identity-info > .summary');
+  var railHome = railSummary ? railSummary.parentNode : null; // .identity-info
+  var railAside = null;
+  function mountRails() {
+    if (!railSummary || !railHome) return; // no summary in this build — grid-only rails via CSS
+    if (!railAside) {
+      railAside = document.createElement('aside');
+      railAside.className = 'summary-rail';
+      railAside.setAttribute('aria-label', 'About');
+    }
+    if (!railAside.parentNode) {
+      var wrap = document.querySelector('.wrap');
+      if (wrap) wrap.appendChild(railAside);
+    }
+    if (railSummary.parentNode !== railAside) railAside.appendChild(railSummary);
+  }
+  function unmountRails() {
+    // appendChild = the original slot: the summary is .identity-info's last child.
+    if (railSummary && railHome && railSummary.parentNode !== railHome) railHome.appendChild(railSummary);
+    if (railAside && railAside.parentNode) railAside.parentNode.removeChild(railAside);
+  }
+  function syncRails() {
+    if (railsMql && railsMql.matches) mountRails(); else unmountRails();
+  }
+  syncRails(); // before first paint
+  if (railsMql) {
+    if (railsMql.addEventListener) railsMql.addEventListener('change', syncRails);
+    else if (railsMql.addListener) railsMql.addListener(syncRails);
+  }
+  window.addEventListener('beforeprint', unmountRails); // every print mode is single-column; summary prints in-card
+  window.addEventListener('afterprint', syncRails);
   const PHOTO_KEY = 'hope_headshot_data_url';
   const photoInput = document.getElementById('photo-input');
   const photoPreview = document.getElementById('photo-preview');

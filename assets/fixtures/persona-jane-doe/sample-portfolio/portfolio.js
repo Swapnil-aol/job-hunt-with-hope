@@ -224,6 +224,13 @@
   };
   var enableContinuousPrint = function () {
     disableContinuousPrint();
+    // The 816px body pin below does NOT un-match the ≥1792px viewport media
+    // query (MQs read the viewport, not body width) — the rails CSS is gated
+    // off via body:not(.print-continuous), but the relocated summary NODEs
+    // must also be back in their identity cards before the height is
+    // measured. unmountRails is a hoisted function declaration (rails block
+    // below).
+    unmountRails();
     document.body.classList.add('print-continuous');
     document.body.style.width = CONT_PAGE_W_PX + 'px'; // measure at print width
     void document.body.offsetHeight;                   // force reflow before measuring
@@ -350,6 +357,76 @@
       head.closest('.item-card').classList.toggle('expanded');
     });
   });
+
+  // ── WIDE-SCREEN RAILS (≥1792px) — minimal JS relocation, one node each, no clones ──
+  // AUTHORING NOTE — approach mirrors the template (assets/templates/
+  // portfolio/portfolio.js): each summary lives INSIDE its .identity-card,
+  // whose overflow:hidden + border/background chrome make a pure-CSS escape
+  // impossible without dissolving the card (display:contents — the reverted
+  // v0.8.0 mistake). So: minimal JS relocation on a matchMedia listener. At
+  // ≥1792px (the sample's offset breakpoint — math in portfolio.css's rails
+  // block) the summary <p>s — the ORIGINAL nodes, one per persona, never
+  // cloned — move into a single .summary-rail <aside> appended to .wrap.
+  // SAMPLE TWIST vs the template's single summary: the summaries carry
+  // data-persona in the markup, so setPersona's existing
+  // [data-persona-hidden] toggle keeps gating them wherever they sit —
+  // persona switching needs no extra wiring and only the active persona's
+  // summary shows in the rail. Below the breakpoint each summary moves back
+  // to its OWN card — it is .identity-info's LAST child in every persona
+  // card, so a plain appendChild restores the exact markup position — and
+  // the aside is removed from the DOM entirely, leaving the narrow document
+  // identical to what the markup ships. The section-grid is NEVER moved: it
+  // is already a direct .wrap child, so the rails grid in portfolio.css
+  // re-columns it in place — its click wiring and setPersona's
+  // Overview-default-open logic (the sample's mirror of the template's
+  // {{#show_summary}} promotion/strip residue) work untouched.
+  // This block runs synchronously here (classic script, end of body),
+  // before the initial setPersona('jane') at the bottom of this IIFE — both
+  // before first paint, so there is no relocation flash at load. The MQ
+  // 'change' listener covers resize in BOTH directions. Print stays
+  // single-column with the summary in-card: beforeprint moves them home
+  // (afterprint re-syncs), and the continuous engine calls unmountRails()
+  // before measuring — the 816px body pin does NOT un-match a viewport
+  // media query, so the DOM must be restored explicitly there (the CSS side
+  // is gated with body:not(...) classes).
+  var railsMql = window.matchMedia ? window.matchMedia('(min-width: 1792px)') : null;
+  var railSummaries = [];
+  document.querySelectorAll('.identity-card .identity-info > .summary').forEach(function (s) {
+    railSummaries.push({ node: s, home: s.parentNode }); // home = the persona card's .identity-info
+  });
+  var railAside = null;
+  function mountRails() {
+    if (!railSummaries.length) return; // no summaries in this build — grid-only rails via CSS
+    if (!railAside) {
+      railAside = document.createElement('aside');
+      railAside.className = 'summary-rail';
+      railAside.setAttribute('aria-label', 'About');
+    }
+    if (!railAside.parentNode) {
+      var wrap = document.querySelector('.wrap');
+      if (wrap) wrap.appendChild(railAside);
+    }
+    railSummaries.forEach(function (r) {
+      if (r.node.parentNode !== railAside) railAside.appendChild(r.node);
+    });
+  }
+  function unmountRails() {
+    // appendChild = the original slot: every summary is its .identity-info's last child.
+    railSummaries.forEach(function (r) {
+      if (r.node.parentNode !== r.home) r.home.appendChild(r.node);
+    });
+    if (railAside && railAside.parentNode) railAside.parentNode.removeChild(railAside);
+  }
+  function syncRails() {
+    if (railsMql && railsMql.matches) mountRails(); else unmountRails();
+  }
+  syncRails(); // before first paint
+  if (railsMql) {
+    if (railsMql.addEventListener) railsMql.addEventListener('change', syncRails);
+    else if (railsMql.addListener) railsMql.addListener(syncRails);
+  }
+  window.addEventListener('beforeprint', unmountRails); // every print mode is single-column; summary prints in-card
+  window.addEventListener('afterprint', syncRails);
 
   // ─── Photo upload (matches production storage key for portability) ─
   const PHOTO_KEY = 'hope_headshot_data_url';

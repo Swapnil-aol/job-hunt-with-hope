@@ -271,7 +271,14 @@
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
         </div>
-        <p class="summary">
+        <!-- data-persona on the summary <p> (here and on every persona card —
+             the only in-card node carrying it; siblings inherit the card's
+             gating): the wide-screen rails relocation in portfolio.js lifts
+             all five summaries into one shared .summary-rail aside at
+             ≥1792px, where the card no longer shields them — the attribute
+             lets setPersona's existing [data-persona-hidden] toggle keep
+             gating them there. In-card (narrow, print) it's inert. -->
+        <p class="summary" data-persona="jane">
           Product designer with 9 years across B2B SaaS — design systems, developer tools, and brand-as-product work at Figma, Linear, and Stripe. Led the Figma design-system consolidation across 12 product teams; founded a mentorship program at Stripe that became standard onboarding. Author of <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">Typebook</em> (2,400+ copies sold) and the open-source <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">Type Specimen</em> library.
         </p>
       </div>
@@ -332,7 +339,7 @@
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
         </div>
-        <p class="summary">
+        <p class="summary" data-persona="marcus">
           AI engineer with 7 years across LLM infrastructure, RAG systems, and applied ML. Currently leading the inference platform at Anthropic. Earlier built the eval infrastructure at OpenAI and shipped fraud-detection ML at Stripe. Author of <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">open-eval</em> (5k+ GitHub stars) and <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">PromptCraft</em> (VS Code, 10k+ installs).
         </p>
       </div>
@@ -375,7 +382,7 @@
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
         </div>
-        <p class="summary">
+        <p class="summary" data-persona="aisha">
           Research scientist focused on mechanistic interpretability. 6 publications (4 NeurIPS, 2 ICLR), 1,800+ citations. PhD MIT CSAIL. Currently at Anthropic on the interpretability team. Author of <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">probe-tools</em> (open source) and co-organizer of the <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">Circuits Workshop</em> (NeurIPS 2024).
         </p>
       </div>
@@ -418,7 +425,7 @@
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
         </div>
-        <p class="summary">
+        <p class="summary" data-persona="theo">
           Developer advocate at Hugging Face. 4 years bridging engineers and AI tools through workshops, video tutorials, and OSS contributions. Reached 12k devs through the LLM-on-Edge series. Previously DevRel at Vercel; before that, FE engineer at Stripe. Co-author of <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">Building with LLMs</em> (O'Reilly, 2025).
         </p>
       </div>
@@ -461,7 +468,7 @@
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
         </div>
-        <p class="summary">
+        <p class="summary" data-persona="sam">
           Founding engineer at three Series-A startups across fintech, productivity, and AI infrastructure. Polyglot full-stack with deep AI ops chops — current employer Inflection AI (Series A, 8 engineers). Author of <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">PromptGw</em> (open-source LLM gateway, 4k+ stars) and the <em style="color: var(--accent-cyan); font-style: normal; font-weight: 600;">Founding Engineer Playbook</em> (Substack, 15k subscribers).
         </p>
       </div>
