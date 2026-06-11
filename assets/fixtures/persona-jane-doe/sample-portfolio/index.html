@@ -120,6 +120,23 @@
     </div>
 
     <div class="dc-section">
+      <label class="dc-label" for="demo-traveler">Timeline traveler</label>
+      <!-- SAMPLE-ONLY preview control — the real artifact has no picker UI;
+           the traveler choice arrives via the data file (the skill asks in
+           chat per the rule-#6 picker in skills/portfolio/SKILL.md). -->
+      <select class="dc-select" id="demo-traveler">
+        <option value="dot">Glow dot (default)</option>
+        <option value="paper-plane">Paper plane</option>
+        <option value="car">Car</option>
+        <option value="train">Train</option>
+        <option value="sailboat">Sailboat</option>
+        <option value="bicycle">Bicycle</option>
+        <option value="rocket">Rocket</option>
+        <option value="footprints">Footprints</option>
+      </select>
+    </div>
+
+    <div class="dc-section">
       <label class="dc-label">Career length<span class="dc-readout" id="rd-career">9y</span></label>
       <div class="dc-segmented" data-control="career">
         <button data-value="1">1y</button>

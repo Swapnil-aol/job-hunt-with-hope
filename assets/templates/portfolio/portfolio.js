@@ -521,11 +521,80 @@
       e.dateText = fmtYM(e.startM) + ' – ' + (e.endM === null ? 'Present' : fmtYM(e.endM));
     });
 
+    // ── The ridge — the rail's vertical dimension ("mountain peaks"). ──
+    // Density at any month = how many entries are active then (ongoing runs
+    // to now); smoothed into terrain (two 5-tap passes), normalized min→max
+    // so a single-thread career stays FLAT — the ridge degrades to the
+    // classic rail — while concurrency rises into peaks. Every career gets
+    // its own silhouette. RIDGE_H pairs with the .tl-has-ridge headroom in
+    // portfolio.css — change both together.
+    var RIDGE_H = 28;
+    var SAMPLES = 120;
+    var density = [];
+    var s, j, k;
+    for (s = 0; s <= SAMPLES; s++) {
+      var mAt = minM + span * s / SAMPLES;
+      var cnt = 0;
+      entries.forEach(function (e) {
+        var end = e.endM === null ? nowM : Math.max(e.endM, e.startM + 1);
+        if (mAt >= e.startM && mAt <= end) cnt++;
+      });
+      density.push(cnt);
+    }
+    for (var pass = 0; pass < 2; pass++) {
+      var sm = density.slice();
+      for (j = 0; j < density.length; j++) {
+        var acc = 0, n = 0;
+        for (k = -2; k <= 2; k++) { if (density[j + k] !== undefined) { acc += density[j + k]; n++; } }
+        sm[j] = acc / n;
+      }
+      density = sm;
+    }
+    var dMin = Infinity, dMax = -Infinity;
+    density.forEach(function (v) { if (v < dMin) dMin = v; if (v > dMax) dMax = v; });
+    var hasRidge = (dMax - dMin) >= 0.25;
+    function liftAt(pct) { // px of lift at a 0–100 rail position
+      if (!hasRidge) return 0;
+      var f = pct / 100 * SAMPLES;
+      var i0 = Math.floor(f), i1 = Math.min(SAMPLES, i0 + 1), t = f - i0;
+      var v = density[i0] * (1 - t) + density[i1] * t;
+      return (v - dMin) / (dMax - dMin) * RIDGE_H;
+    }
+    entries.forEach(function (e) { e.lift = liftAt(e.pct); });
+
     var rail = document.createElement('div');
     rail.className = 'tl-rail';
     var track = document.createElement('span');
     track.className = 'tl-track';
     rail.appendChild(track);
+
+    // The ridge area — inline SVG (vector: prints crisp; colors ride the
+    // tokens, so dark theme and ink's monochrome override cover it for
+    // free). z-index 0 in CSS: under the ticks, nodes, and traveler.
+    if (hasRidge) {
+      rail.classList.add('tl-has-ridge'); // unlocks the taller label headroom in CSS
+      var NS = 'http://www.w3.org/2000/svg';
+      var ridge = document.createElementNS(NS, 'svg');
+      ridge.setAttribute('class', 'tl-ridge');
+      ridge.setAttribute('viewBox', '0 0 ' + SAMPLES + ' ' + (RIDGE_H + 2));
+      ridge.setAttribute('preserveAspectRatio', 'none');
+      ridge.setAttribute('aria-hidden', 'true');
+      var pts = '';
+      for (s = 0; s <= SAMPLES; s++) {
+        var lift = (density[s] - dMin) / (dMax - dMin) * RIDGE_H;
+        pts += (s === 0 ? 'M' : 'L') + s + ' ' + (RIDGE_H + 1 - lift).toFixed(2);
+      }
+      var fillPath = document.createElementNS(NS, 'path');
+      fillPath.setAttribute('class', 'tl-ridge-fill');
+      fillPath.setAttribute('d', pts + 'L' + SAMPLES + ' ' + (RIDGE_H + 2) + 'L0 ' + (RIDGE_H + 2) + 'Z');
+      var linePath = document.createElementNS(NS, 'path');
+      linePath.setAttribute('class', 'tl-ridge-line');
+      linePath.setAttribute('d', pts);
+      linePath.setAttribute('vector-effect', 'non-scaling-stroke');
+      ridge.appendChild(fillPath);
+      ridge.appendChild(linePath);
+      rail.appendChild(ridge);
+    }
 
     // Year ticks — at most ~7, January-aligned, styled by .tl-tick/-year.
     var firstYear = Math.ceil(minM / 12);
@@ -558,6 +627,7 @@
         (i % 2 ? ' tl-below' : '') +
         (i % 4 >= 2 ? ' tl-far' : '');
       node.style.left = e.pct + '%';
+      if (e.lift) node.style.top = 'calc(50% - ' + e.lift.toFixed(1) + 'px)'; // riding the ridge
       node.setAttribute('aria-label', e.label + ', ' + e.dateText);
       var hex = document.createElement('span');
       hex.className = 'tl-hex';
@@ -669,7 +739,7 @@
     function applyStep(i, backward) {
       if (current >= 0 && nodes[current]) nodes[current].classList.remove('tl-active');
       nodes[i].classList.add('tl-active');
-      playhead.style.transform = 'translateX(' + playheadX(i) + 'px)'; // transform-only motion
+      playhead.style.transform = 'translate(' + playheadX(i) + 'px, ' + (-entries[i].lift).toFixed(1) + 'px)'; // transform-only motion — the traveler climbs the ridge
       traveler.classList.toggle('tl-flip', !!backward); // face backward on the loop wrap
       current = i;
     }
