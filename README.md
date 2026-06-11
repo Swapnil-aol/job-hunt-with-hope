@@ -4,7 +4,7 @@
 
 Free · open-source (MIT) · your data never leaves your machine
 
-I built Hope while job-hunting. It's gotten me interviews at EY, Amazon, Baker McKenzie, and more — and it's done the same for others, at FedEx, Cerebras, Apple. 85.5% of its earlier users landed multiple interviews and secured full-time roles.
+I built Hope while job-hunting. It's gotten me interviews at <img src="https://www.google.com/s2/favicons?domain=ey.com&sz=64" height="14" alt=""> <ins>EY</ins>, <img src="https://www.google.com/s2/favicons?domain=amazon.com&sz=64" height="14" alt=""> <ins>Amazon</ins>, <img src="https://www.google.com/s2/favicons?domain=bakermckenzie.com&sz=64" height="14" alt=""> <ins>Baker McKenzie</ins>, and more — and it's done the same for others, at <img src="https://www.google.com/s2/favicons?domain=fedex.com&sz=64" height="14" alt=""> <ins>FedEx</ins>, <img src="https://www.google.com/s2/favicons?domain=cerebras.ai&sz=64" height="14" alt=""> <ins>Cerebras</ins>, <img src="https://www.google.com/s2/favicons?domain=apple.com&sz=64" height="14" alt=""> <ins>Apple</ins>. 85.5% of its earlier users landed multiple interviews and secured full-time roles.
 
 Hope has been evolving since 2023 — born inside my startup **CareerX, Inc.** on early ChatGPT and rebuilt across many models and stacks since. CareerX has grown into **Agent Hope — an agentic career manager for humans** — and this plugin, at home with Claude, is its best form yet. Tools that do good should meet people wherever they are.
 
