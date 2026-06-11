@@ -49,6 +49,15 @@ skills-roadmap/
     │                                     #   blocks (var(--token) only), per-layout print rules, R10
     │                                     #   published gates, R9 init-JS note. Explicit banner: NOT
     │                                     #   applied to the shipped template.
+    ├── samples/                          # per-pack fictional persona samples (persona.md +
+    │                                     #   data.js + composition.md each) — index at
+    │                                     #   samples/README.md; designer is covered by the
+    │                                     #   shipped Jane Doe fixture, so it has no folder.
+    │                                     #   Rides along at activation like this folder's other
+    │                                     #   docs — hope-enrich/hope-portfolio read the matched
+    │                                     #   pack's sample as the worked example (composition +
+    │                                     #   tone + density; never persona facts) per
+    │                                     #   samples/README.md § "How Hope extrapolates".
     └── ACTIVATION.md                     # this file
 ```
 
