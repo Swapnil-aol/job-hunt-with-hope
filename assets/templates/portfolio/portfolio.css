@@ -11,6 +11,7 @@
   --accent-violet: #7C5BBF; --accent-violet-bg: rgba(124,91,191,0.10); --accent-violet-edge: rgba(124,91,191,0.25);
   --accent-amber: #C27D0E; --accent-amber-bg: rgba(194,125,14,0.12); --accent-amber-edge: rgba(194,125,14,0.30);
   --accent-rose: #D43450;
+  --accent-slate: #4A6FA5; --accent-slate-bg: rgba(74,111,165,0.10); --accent-slate-edge: rgba(74,111,165,0.30); /* experience — the timeline/app identity color (orange is chrome, never a category) */
   --border-default: rgba(31,22,14,0.10); --border-subtle: rgba(31,22,14,0.05); --border-hover: rgba(31,22,14,0.20);
   --radius-card: 8px; --radius-panel: 10px; --radius-button: 6px; --radius-pill: 9999px; --radius-tight: 3px;
   --shadow-sm: 0 1px 2px rgba(31,22,14,0.04); --shadow-md: 0 2px 8px rgba(31,22,14,0.06);
@@ -30,6 +31,7 @@
   --accent-violet: #A78BFA; --accent-violet-bg: rgba(167,139,250,0.12); --accent-violet-edge: rgba(167,139,250,0.30);
   --accent-amber: #F59E0B; --accent-amber-bg: rgba(245,158,11,0.14); --accent-amber-edge: rgba(245,158,11,0.30);
   --accent-rose: #F43F5E;
+  --accent-slate: #7FA3D7; --accent-slate-bg: rgba(127,163,215,0.14); --accent-slate-edge: rgba(127,163,215,0.30);
   --border-default: rgba(240,231,213,0.08); --border-subtle: rgba(240,231,213,0.04); --border-hover: rgba(240,231,213,0.20);
   --grid-line: rgba(240,231,213,0.04); --scan-line: rgba(240,231,213,0.02);
 }
@@ -99,6 +101,11 @@ img { display: block; }
     color: var(--accent-orange);
     margin: 14px 0 8px;
   }
+  /* Pane labels carry the app identity colors in print too. */
+  .section-pane[data-pane="experience"]::before { color: var(--accent-slate); }
+  .section-pane[data-pane="projects"]::before { color: var(--accent-cyan); }
+  .section-pane[data-pane="education"]::before { color: var(--accent-violet); }
+  .section-pane[data-pane="certifications"]::before { color: var(--accent-amber); }
   .section-pane:first-of-type::before { margin-top: 4px; }
   /* Expand all collapsed cards and hide the now-meaningless chevron. */
   .item-body { max-height: none !important; overflow: visible !important; }
@@ -178,6 +185,7 @@ img { display: block; }
     --accent-violet: #111; --accent-violet-bg: transparent; --accent-violet-edge: #c8c8c8;
     --accent-amber: #555; --accent-amber-bg: transparent; --accent-amber-edge: #c8c8c8;
     --accent-rose: #111;
+    --accent-slate: #111; --accent-slate-bg: transparent; --accent-slate-edge: #c8c8c8;
     --border-default: #cfcfcf; --border-subtle: #e4e4e4; --border-hover: #aaa;
     --shadow-sm: none; --shadow-md: none;
     --grid-line: transparent; --scan-line: transparent;
@@ -461,6 +469,15 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 
 .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
 .section-btn { background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-button); padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-align: left; font-family: inherit; box-shadow: var(--shadow-sm); transition: all 0.2s ease; }
+/* App identity colors — the timeline's type palette threads into each app's
+   tile and content borders (color = navigation: the slate hex on the
+   timeline leads to the slate-edged app). Fill stays BRAND orange on the
+   active tile; identity lives in borders only. Orange is chrome, never a
+   category. Overview and Skills aren't timeline types — they stay neutral. */
+.section-btn[data-section="experience"] { border-left: 3px solid var(--accent-slate); }
+.section-btn[data-section="projects"] { border-left: 3px solid var(--accent-cyan); }
+.section-btn[data-section="education"] { border-left: 3px solid var(--accent-violet); }
+.section-btn[data-section="certifications"] { border-left: 3px solid var(--accent-amber); }
 .section-btn:hover { background: var(--card-bg-hover); border-color: var(--border-hover); transform: translateY(-1px); }
 .section-btn.active { background: var(--accent-orange); border-color: var(--accent-orange); box-shadow: var(--accent-orange-glow); }
 .section-btn .icon { width: 32px; height: 32px; border-radius: var(--radius-button); background: var(--accent-orange-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--accent-orange); transition: all 0.2s; }
@@ -490,6 +507,14 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 .item-card:hover { background: var(--card-bg-hover); border-color: var(--border-hover); }
 .item-card.expanded { background: var(--card-bg-active); box-shadow: var(--shadow-md); }
 .item-card .accent-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--text-muted), transparent); z-index: 2; }
+/* The thread, inside the content: pane-scoped accent bars + card edges take
+   the app's identity color. is-current stays brand orange (re-asserted at
+   pane specificity below). */
+.section-pane[data-pane="experience"] .item-card .accent-bar { background: linear-gradient(180deg, var(--accent-slate), transparent); }
+.section-pane[data-pane="projects"] .item-card .accent-bar { background: linear-gradient(180deg, var(--accent-cyan), transparent); }
+.section-pane[data-pane] .item-card.is-current .accent-bar { background: var(--accent-orange); }
+.section-pane[data-pane="education"] .edu-card { border-left: 3px solid var(--accent-violet); }
+.section-pane[data-pane="certifications"] .edu-card { border-left: 3px solid var(--accent-amber); }
 .item-card.is-current .accent-bar { background: linear-gradient(180deg, var(--accent-orange), var(--accent-orange) 60%, transparent); box-shadow: 0 0 12px rgba(217,119,6,0.30); }
 .item-head { display: flex; align-items: center; gap: 14px; padding: 14px 16px 14px 19px; cursor: pointer; user-select: none; }
 .org-logo { flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--radius-button); background: var(--surface-2); border: 1px solid var(--border-default); padding: 4px; object-fit: contain; }
@@ -780,10 +805,10 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
 .tl-rail.tl-has-ridge { margin-top: 64px; }
 /* Nodes — 14px hexes (the brand clip-path, same polygon as .hex-kpi .hex),
    one per entry, positioned proportionally by start date. Fills per the
-   Throughline contract (T3): experience orange · project cyan · education
+   Throughline contract (T3): experience slate · project cyan · education
    violet · certification amber — token names only, values live in :root. */
 .tl-node { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; z-index: 2; cursor: pointer; }
-.tl-node .tl-hex { position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); background: var(--accent-orange); transition: transform 0.25s ease; }
+.tl-node .tl-hex { position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); background: var(--accent-slate); transition: transform 0.25s ease; }
 .tl-node.tl-project .tl-hex { background: var(--accent-cyan); }
 .tl-node.tl-education .tl-hex { background: var(--accent-violet); }
 .tl-node.tl-certification .tl-hex { background: var(--accent-amber); }

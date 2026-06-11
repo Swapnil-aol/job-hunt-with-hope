@@ -33,6 +33,7 @@ Because every component reads `var(--token)`, recoloring is a token swap, never 
   --accent-violet: #7C5BBF; --accent-violet-bg: rgba(124,91,191,0.10); --accent-violet-edge: rgba(124,91,191,0.25);
   --accent-amber: #C27D0E; --accent-amber-bg: rgba(194,125,14,0.12); --accent-amber-edge: rgba(194,125,14,0.30);
   --accent-rose: #D43450;
+  --accent-slate: #4A6FA5; --accent-slate-bg: rgba(74,111,165,0.10); --accent-slate-edge: rgba(74,111,165,0.30);
   --border-default: rgba(31,22,14,0.10); --border-subtle: rgba(31,22,14,0.05); --border-hover: rgba(31,22,14,0.20);
   --radius-card: 8px; --radius-panel: 10px; --radius-button: 6px; --radius-pill: 9999px; --radius-tight: 3px;
   --shadow-sm: 0 1px 2px rgba(31,22,14,0.04); --shadow-md: 0 2px 8px rgba(31,22,14,0.06);
@@ -59,6 +60,7 @@ A **warm dark** — near-black browns, not a cold blue HUD. Light remains the de
   --accent-violet: #A78BFA; --accent-violet-bg: rgba(167,139,250,0.12); --accent-violet-edge: rgba(167,139,250,0.30);
   --accent-amber: #F59E0B; --accent-amber-bg: rgba(245,158,11,0.14); --accent-amber-edge: rgba(245,158,11,0.30);
   --accent-rose: #F43F5E;
+  --accent-slate: #7FA3D7; --accent-slate-bg: rgba(127,163,215,0.14); --accent-slate-edge: rgba(127,163,215,0.30);
   --border-default: rgba(240,231,213,0.08); --border-subtle: rgba(240,231,213,0.04); --border-hover: rgba(240,231,213,0.20);
   --grid-line: rgba(240,231,213,0.04); --scan-line: rgba(240,231,213,0.02);
 }
@@ -82,6 +84,7 @@ Treat custom as "swap the accent(s), keep everything else." That's the whole fea
 - **Violet (`--accent-violet`) — leadership / scope.** Leadership contribution group header, scope badges.
 - **Amber (`--accent-amber`) — warning.** "No date" pills, medium-confidence bars.
 - **Rose (`--accent-rose`) — destructive.** Photo-remove button, low-confidence bars.
+- **Slate (`--accent-slate`) — Experience.** The timeline-type identity color for work history (timeline hexes, the Experience tile's left edge, experience accent bars). **The type palette** — experience slate · projects cyan · education violet · certifications amber — threads from the Throughline into each app's tile and content borders: color is navigation. **Orange is chrome, never a category**; tile fills stay brand orange on the active tile; Overview and Skills aren't timeline types and stay neutral.
 
 ## 6. Typography
 
@@ -148,7 +151,7 @@ A generated portfolio is a **folder of four named files**, opened by double-clic
 The career timeline strip. Canon by citation:
 
 - **Structure is brand**: the strip is part of the identity-card structure — full-width at the bottom of the card (`id="throughline"`, `tl-*` classes), thin track on `--border-default`, mono 9px `--text-dim` year ticks, brand-hex nodes. The 32×32 grid texture (§8) does **not** repeat here — the card already carries it.
-- **Node colors** follow the accent semantics of §5: experience `--accent-orange` · project `--accent-cyan` · education `--accent-violet` · certification `--accent-amber`; ongoing entries take a subtle `--accent-emerald` edge. Tokens only — never restated hex.
+- **Node colors** follow the accent semantics of §5: experience `--accent-slate` · project `--accent-cyan` · education `--accent-violet` · certification `--accent-amber`; ongoing entries take a subtle `--accent-emerald` edge. Tokens only — never restated hex.
 - **The traveler** (playhead glyph) obeys the brand-icon law (§6): monochrome single-path inline SVG, `currentColor`, ~16px. Default is the soft orange glow dot.
 - **Animation is `transform`/`opacity` only** — no layout properties. It pauses under exactly four conditions: hover (anywhere on the strip), `document.hidden`, strip off-viewport, and `prefers-reduced-motion` (which renders the static rail instead).
 
