@@ -9,7 +9,7 @@
       "name": "hope",
       "displayName": "JobHunt with Hope",
       "description": "JobHunt with Hope — build a designed portfolio website from your own facts and publish it to a free GitHub Pages site you own, all from a career file stored on your machine. One link to share.",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "source": ".",
       "license": "MIT",
       "tags": [
@@ -19,7 +19,8 @@
         "resume",
         "interview"
       ],
-      "category": "productivity"
+      "category": "productivity",
+      "homepage": "https://agenthope.ai"
     }
   ]
 }
