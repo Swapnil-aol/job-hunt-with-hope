@@ -4,7 +4,7 @@ description: Use when a user wants to generate a portfolio — their work, their
 user-invocable: true
 ---
 
-<!-- hope-skill-version: 1.1.0 -->
+<!-- hope-skill-version: 1.1.1 -->
 
 # Hope Portfolio · Milestone 3 — Hope's Signature
 
@@ -220,7 +220,7 @@ The Social Feed is an **optional app** (offered via the app catalog — see "Wha
 
 | Field | Contract |
 |---|---|
-| `platform` | one of — **iframe embeds:** `youtube` `vimeo` `spotify` `soundcloud` `applemusic` `figma` `codepen` `loom` `bluesky` `linkedin` `substack` `flickr`; **script embeds:** `tiktok` `instagram` `x` `threads` `pinterest`; **link cards:** `dribbble` `behance` `medium` `gist` `link`. `link` = a generic link card for any URL. |
+| `platform` | one of — **iframe embeds:** `youtube` `vimeo` `spotify` `soundcloud` `applemusic` `figma` `codepen` `loom` `bluesky` `linkedin` `substack` `flickr` `behance`; **script embeds:** `tiktok` `instagram` `x` `threads` `pinterest` `medium`; **link cards:** `dribbble` `gist` `link`. `link` = a generic link card for any URL. Note: **Behance** embeds a *project* (`/gallery/<id>/…`) — a profile URL falls back to a link card; **X** and **Medium** render in real browsers but may not in some contexts, so their link fallback matters. |
 | `url` | the public permalink. The renderer derives the embed from it — **you never write embed HTML**. |
 | `title` | optional label for the always-present "View on …" link (defaults to "View on {platform}"). |
 | `caption` | optional one short line shown above the embed. |
@@ -535,7 +535,7 @@ Options 1–3 (and any updates the user accepts from option 5) land here. **Rege
 
 ## Stale-session check — is this chat running an older Hope?
 
-This file carries a version marker near the top — `<!-- hope-skill-version: 1.1.0 -->` — naming the Hope this chat loaded. The live version is whatever `$PLUGIN_ROOT/plugin.json` says **right now** (the `<LIVE>` one-liner above). Run the comparison whenever the user picks option 4 or 5 of the update menu.
+This file carries a version marker near the top — `<!-- hope-skill-version: 1.1.1 -->` — naming the Hope this chat loaded. The live version is whatever `$PLUGIN_ROOT/plugin.json` says **right now** (the `<LIVE>` one-liner above). Run the comparison whenever the user picks option 4 or 5 of the update menu.
 
 When `plugin.json` is **newer** than the marker, this conversation loaded an older Hope — a newer release is installed, but a running chat can't pick it up mid-flight. Output exactly this structure:
 
