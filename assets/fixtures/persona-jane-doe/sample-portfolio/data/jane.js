@@ -137,7 +137,7 @@ window.HOPE_DATA = {
   // https site; offline each post falls back to its "View on …" link.
   social: [
     { platform: 'dribbble', url: 'https://dribbble.com/janedoe', title: 'View on Dribbble', caption: 'Recent UI shots & explorations' },
-    { platform: 'behance', url: 'https://www.behance.net/gallery/187091157/Experiments-258-270', title: 'View on Behance', caption: 'Selected case study — generative type' },
+    { platform: 'behance', url: 'https://www.behance.net/janedoe', title: 'View on Behance', caption: 'Full case studies' },
     { platform: 'vimeo', url: 'https://vimeo.com/76979871', caption: 'Prototype & motion showreel' },
     { platform: 'youtube', url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ', caption: 'Config 2024 — type systems at scale' },
     { platform: 'link', url: 'https://janedoe.design', title: 'janedoe.design', caption: 'Personal portfolio site' }

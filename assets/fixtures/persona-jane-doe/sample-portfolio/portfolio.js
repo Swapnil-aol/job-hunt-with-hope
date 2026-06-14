@@ -646,9 +646,9 @@
       x:          { name: 'X',           cls: 'script', script: 'https://platform.twitter.com/widgets.js', block: function (u) { return '<blockquote class="twitter-tweet"><a href="' + esc(String(u).replace('//x.com', '//twitter.com')) + '"></a></blockquote>'; } },
       threads:    { name: 'Threads',     cls: 'script', script: 'https://www.threads.net/embed.js', block: function (u) { return '<blockquote class="text-post-media" data-text-post-permalink="' + esc(u) + '"></blockquote>'; } },
       pinterest:  { name: 'Pinterest',   cls: 'script', script: '//assets.pinterest.com/js/pinit.js', block: function (u) { return '<a data-pin-do="embedPin" href="' + esc(u) + '"></a>'; } },
-      behance:    { name: 'Behance',     cls: 'iframe', h: 320, src: function (u) { var m = u.match(/behance\.net\/(?:gallery|embed\/project)\/(\d+)/); return m ? 'https://www.behance.net/embed/project/' + m[1] + '?ilo0=1' : null; } },
-      medium:     { name: 'Medium',      cls: 'script', script: 'https://static.medium.com/embed.js', block: function (u) { return '<a class="m-story" href="' + esc(u) + '"></a>'; } },
       dribbble:   { name: 'Dribbble',    cls: 'link' },
+      behance:    { name: 'Behance',     cls: 'link' },
+      medium:     { name: 'Medium',      cls: 'link' },
       gist:       { name: 'GitHub',      cls: 'link' },
       link:       { name: 'Link',        cls: 'link' }
     };
