@@ -4,7 +4,7 @@ description: Use when a user wants to generate a portfolio — their work, their
 user-invocable: true
 ---
 
-<!-- hope-skill-version: 1.1.2 -->
+<!-- hope-skill-version: 1.1.3 -->
 
 # Hope Portfolio · Milestone 3 — Hope's Signature
 
@@ -220,17 +220,42 @@ The Social Feed is an **optional app** (offered via the app catalog — see "Wha
 
 | Field | Contract |
 |---|---|
-| `platform` | one of — **iframe embeds:** `youtube` `vimeo` `spotify` `soundcloud` `applemusic` `figma` `codepen` `loom` `bluesky` `linkedin` `substack` `flickr`; **script embeds:** `tiktok` `instagram` `x` `threads` `pinterest`; **link cards:** `dribbble` `behance` `medium` `gist` `link`. `link` = a generic link card for any URL. Note: **Behance** and **Medium** have embed endpoints but are NOT yet validated to render reliably in a real browser on a published site (a headless render is not proof), so they ship as **link cards** until confirmed — the link card always works. Only promote a platform to an embed once it's verified rendering in a real browser, not just headless. |
+| `platform` | one of — **post/video embed (iframe):** `youtube` `vimeo` `spotify` `soundcloud` `applemusic` `figma` `codepen` `loom` `bluesky` `linkedin` `substack` `flickr`; **post embed (script):** `tiktok` `instagram` `x` `threads` `pinterest`; **profile-only (always a profile card):** `dribbble` `behance` `medium` `gist` `link`. `link` = a generic profile card (globe) for any URL. Remember the URL decides the template: a *post/video* URL on an embed platform → embed card; a *profile/channel* URL → profile card. Note: **Behance** and **Medium** have embed endpoints but aren't yet validated to render reliably in a real browser (a headless render is not proof), so they stay profile-only until confirmed — only promote a platform to an embed once it's verified rendering in a real browser. |
 | `url` | the public permalink. The renderer derives the embed from it — **you never write embed HTML**. |
 | `title` | optional label for the always-present "View on …" link (defaults to "View on {platform}"). |
 | `caption` | optional one short line shown above the embed. |
 | `pinned` | optional boolean, reserved (future: surface in Overview). |
 
-**How it renders (template-owned — don't reinvent):** `portfolio.js` maps each platform to one of three renderers — an `<iframe>`, the platform's `<blockquote>` + async script, or a link card — and **every** card always carries a "View on …" link. That link is the fallback: live embeds need the published `https` site + a connection, so over `file://` / offline the pane shows links, never blank boxes. `.social-grid` reuses the `.skill-grid` auto-fit pattern (collapses on a phone).
+**How it renders — two templates, you pick per the user's content (template-owned, don't reinvent):** `portfolio.js` turns each post into **one of two cards**:
+- an **embed card** — a live `<iframe>` or the platform's `<blockquote>` + async script — when the URL is a specific embeddable **post or video**;
+- a **designed, brand-coloured profile card** — a chip in the platform's colour + name + caption + handle + an arrow — when the URL is a **profile, channel, or site** (or when an embed can't be resolved).
 
-**Platform fit by field** (suggest, don't impose): designers → Behance, Figma, Dribbble, Instagram, CodePen · developers → GitHub Gist, CodePen, X, YouTube · marketers → LinkedIn, X, Instagram, TikTok, YouTube · writers → Medium, Substack, X, Threads, Bluesky · video → YouTube, Vimeo, TikTok, Loom · music → Spotify, SoundCloud, Apple Music · photographers → Instagram, Flickr. **LinkedIn** only embeds posts the author marked embeddable; **X** is the least reliable (its widget degrades). When a platform won't embed, the link card still works — never block on an embed.
+**There are NO bland link cards.** The renderer auto-selects (an embeddable post/video URL resolves to an embed; anything else becomes a profile card), so **Hope chooses the template by choosing the URL**: give a *post/video* link to embed the work itself; give a *profile/channel/site* link for a branded tile that links out. Pick per the user's need — a designer's Dribbble/Behance are profiles (tiles), a talk is a video (embed). The embed card also carries a quiet "View on …" link as the offline fallback (embeds need the published `https` site + a connection). The grid is **masonry** (CSS columns) — short and tall cards pack with no dead space, responsive with no media query. Brand colours/glyphs for every platform live in the renderer's `B` map; an unknown platform gets a lettermark chip + the generic globe.
+
+**Platform fit by field** (suggest, don't impose): designers → Behance, Figma, Dribbble, Instagram, CodePen · developers → GitHub Gist, CodePen, X, YouTube · marketers → LinkedIn, X, Instagram, TikTok, YouTube · writers → Medium, Substack, X, Threads, Bluesky · video → YouTube, Vimeo, TikTok, Loom · music → Spotify, SoundCloud, Apple Music · photographers → Instagram, Flickr. **LinkedIn** only embeds posts the author marked embeddable; **X** is the least reliable (its widget degrades). When a platform won't embed, its branded profile card still works — never block on an embed.
 
 **Print / résumé:** embeds never print — `@media print` hides `.social-embed` and shows the link list only; `#resume-view` carries no social content.
+
+### Featured board — surface the best of any section in the Overview
+
+The Overview isn't a fixed panel — it's a **curated board the user fills** to make the strongest first screen, and like everything Hope does it's a **recommendation the user re-picks** (or overrides, or forks — it's their MIT file). Beyond the stat row + interests, two opt-in strips render inside the Overview pane (both JS-built by `portfolio.js`, both **hidden until filled — zero residue**):
+
+- **"Latest from"** — up to **2 promoted socials**. Mark them with **`pinned: true`** on the social post (`window.HOPE_DATA.social`); the renderer surfaces the pinned ones (max 2) here as their real cards + a **"See all →"** to the full Social pane.
+- **"Highlights"** — featured **work items**: a standout **project**, a key **experience**, a **degree (education)**, a **certification** — *any* timeline entry. Mark them with **`featured: true`** on the timeline entry (`window.HOPE_DATA.timeline`). Each renders as a compact card whose chip is the **org logo** (favicon from the entry's `domain`; the type icon is the fallback only when there's no domain) and which **jumps to its full entry** (activates the pane, scrolls, pulses). Kicker + accent follow the type palette (project = cyan, experience = slate, education = violet, certification = amber).
+
+**Ask what to feature — recommend a default, let them re-pick** (voice-guide rule #6 / `AskUserQuestion`). When the Overview is on:
+
+> Your Overview is the first screen a recruiter sees. What should it feature up top? I'll suggest a strong default — change any of it.
+> - your 2 best **social** profiles/posts
+> - a standout **project**
+> - a key **role**
+> - a **degree or certification** worth surfacing
+>
+> Or tell me in your own words — or "just pick for me." (It's all a recommendation; you can change everything later.)
+
+Record the picks on the CuratedPortfolio so they're remembered and not re-asked while iterating.
+
+**Compose to fill — no gaping holes** (a design rule, not a layout hack; this is the agent being smart, guided by these instructions + the design tokens). When you pin items, **choose ones that compose well.** For "Latest from", pin **two items of similar height** — two live embeds, or two profile cards — *not* a tall video beside a short link, which leaves an empty gap. The layout fills a mismatch gracefully (cards stretch, never raw page background), but two-of-a-kind reads cleanest. Carry the instinct across the whole Overview: balance the strips, fill the space, leave no orphaned empty area. The recruiter should never land on a hole.
 
 ### Resume view — substitution contract
 
@@ -535,7 +560,7 @@ Options 1–3 (and any updates the user accepts from option 5) land here. **Rege
 
 ## Stale-session check — is this chat running an older Hope?
 
-This file carries a version marker near the top — `<!-- hope-skill-version: 1.1.2 -->` — naming the Hope this chat loaded. The live version is whatever `$PLUGIN_ROOT/plugin.json` says **right now** (the `<LIVE>` one-liner above). Run the comparison whenever the user picks option 4 or 5 of the update menu.
+This file carries a version marker near the top — `<!-- hope-skill-version: 1.1.3 -->` — naming the Hope this chat loaded. The live version is whatever `$PLUGIN_ROOT/plugin.json` says **right now** (the `<LIVE>` one-liner above). Run the comparison whenever the user picks option 4 or 5 of the update menu.
 
 When `plugin.json` is **newer** than the marker, this conversation loaded an older Hope — a newer release is installed, but a running chat can't pick it up mid-flight. Output exactly this structure:
 

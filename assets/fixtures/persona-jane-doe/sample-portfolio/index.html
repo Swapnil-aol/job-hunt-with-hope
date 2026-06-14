@@ -602,7 +602,7 @@
       <span class="body">
         <span class="label">Social</span>
         <span class="meta">
-          <span class="count" id="cnt-social">5 posts</span>
+          <span class="count" id="cnt-social">6 posts</span>
         </span>
       </span>
     </button>
@@ -650,6 +650,18 @@
             <span class="stat-value">1.2k</span>
             <span class="stat-label">GitHub stars · Type Specimen</span>
           </span>
+        </div>
+      </div>
+      <!-- Featured board — JS-rendered: "Latest from" = pinned socials,
+           "Highlights" = featured work items. Hidden until filled. -->
+      <div class="overview-featured">
+        <div class="overview-strip" id="ov-latest-wrap" hidden>
+          <div class="overview-strip-head"><span class="overview-strip-title">Latest from</span><a class="overview-seeall" href="#spotlight=social">See all<span class="material-symbols-rounded">arrow_forward</span></a></div>
+          <div class="overview-latest" id="overview-latest"></div>
+        </div>
+        <div class="overview-strip" id="ov-highlights-wrap" hidden>
+          <div class="overview-strip-head"><span class="overview-strip-title">Highlights</span></div>
+          <div class="overview-highlights" id="overview-highlights"></div>
         </div>
       </div>
       <div class="summary-interests">

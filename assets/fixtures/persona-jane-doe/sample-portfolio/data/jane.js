@@ -55,7 +55,7 @@ window.HOPE_PERSONAS.jane = {
    the artifact only renders it. */
 window.HOPE_DATA = {
   timeline: [
-    { id: 'risd-bfa', type: 'education', date_start: '2013-09', date_end: '2017-05',
+    { id: 'risd-bfa', featured: true, type: 'education', date_start: '2013-09', date_end: '2017-05',
       label: 'BFA Graphic Design @ RISD', org: 'Rhode Island School of Design',
       domain: 'risd.edu', metric: 'GPA 3.94',
       skills: ['typography', 'illustration'],
@@ -105,12 +105,12 @@ window.HOPE_DATA = {
       domain: null, metric: '200+ walkers across 18 tours',
       skills: ['typography'],
       pane: 'projects', anchor: 'tl-type-walks' },
-    { id: 'figma', type: 'experience', date_start: '2022-09', date_end: null,
+    { id: 'figma', featured: true, type: 'experience', date_start: '2022-09', date_end: null,
       label: 'Senior Product Designer @ Figma', org: 'Figma',
       domain: 'figma.com', metric: '37% design-system adoption',
       skills: ['design systems', 'design tokens', 'component architecture', 'typography'],
       pane: 'experience', anchor: 'tl-figma' },
-    { id: 'type-specimen', type: 'project', date_start: '2023-03', date_end: null,
+    { id: 'type-specimen', featured: true, type: 'project', date_start: '2023-03', date_end: null,
       label: 'Type Specimen · open source', org: 'Open Source · Lead Maintainer',
       domain: 'github.com', metric: '1.2k GitHub stars',
       skills: ['typography', 'JavaScript', 'html/css', 'mentorship'],
@@ -136,10 +136,11 @@ window.HOPE_DATA = {
   // a couple of live video embeds + her site. Embeds render on the published
   // https site; offline each post falls back to its "View on …" link.
   social: [
-    { platform: 'dribbble', url: 'https://dribbble.com/janedoe', title: 'View on Dribbble', caption: 'Recent UI shots & explorations' },
-    { platform: 'behance', url: 'https://www.behance.net/janedoe', title: 'View on Behance', caption: 'Full case studies' },
     { platform: 'vimeo', url: 'https://vimeo.com/76979871', caption: 'Prototype & motion showreel' },
-    { platform: 'youtube', url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ', caption: 'Config 2024 — type systems at scale' },
-    { platform: 'link', url: 'https://janedoe.design', title: 'janedoe.design', caption: 'Personal portfolio site' }
+    { platform: 'dribbble', pinned: true, url: 'https://dribbble.com/janedoe', caption: 'Recent shots & explorations' },
+    { platform: 'behance', pinned: true, url: 'https://www.behance.net/janedoe', caption: 'Selected case studies' },
+    { platform: 'instagram', url: 'https://www.instagram.com/janedoe.design', caption: 'Design process & sketchbook' },
+    { platform: 'youtube', url: 'https://www.youtube.com/@janedoe', caption: 'Talks & tutorials' },
+    { platform: 'link', url: 'https://janedoe.design', caption: 'Personal portfolio' }
   ]
 };

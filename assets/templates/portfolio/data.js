@@ -22,6 +22,8 @@
        pane:       "experience" | "education" | "projects" | "certifications"
                    — the section pane holding the entry's card
        anchor:     the DOM id of the target card in index.html ("tl-<id>")
+       featured:   OPTIONAL true — surface this entry in the Overview
+                   "Highlights" board (a compact card that jumps to it)
      }
 
    window.HOPE_DATA.traveler — the playhead glyph:
@@ -41,7 +43,8 @@
        url:      string — the public permalink; the renderer derives the embed
        title:    string | null — label for the always-present "View on …" link
        caption:  string | null — one short line shown above the embed
-       pinned:   boolean        — reserved (surface in Overview); optional
+       pinned:   boolean        — true surfaces this post in the Overview
+                                  "Latest from" strip (max 2); optional
      }
    portfolio.js renders these into #social-grid: a live embed where the platform
    supports it, ALWAYS with a "View on …" link as the fallback — embeds need the

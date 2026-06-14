@@ -1654,24 +1654,67 @@ h1.name {
 }
 
 /* ── Social Feed (optional app) ─── cards JS-rendered by portfolio.js into
-   #social-grid. Reuses the .skill-grid auto-fit pattern (wider min for embeds)
-   so it collapses to one column on a phone with no hand-rolled media query. */
-.social-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: start; }
-.social-card { display: flex; flex-direction: column; gap: 9px; background: var(--card-bg); border: 1px solid var(--border-default); border-left: 3px solid var(--accent-orange); border-radius: var(--radius-card); padding: 12px 13px; overflow: hidden; }
-.social-card.social-cls-link { background: var(--surface-2); }
-.social-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.social-plat { font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-orange); flex-shrink: 0; }
-.social-cap { font-size: 12.5px; color: var(--text-secondary); line-height: 1.45; }
+   #social-grid. Two templates: EMBED cards (live media) + branded PROFILE
+   cards (designed link tiles) — no bland link cards. MASONRY via CSS columns,
+   so a short card never leaves dead space below a tall one; inherently
+   responsive (1 column on a phone, more as width allows). */
+.social-grid { columns: 300px; column-gap: 14px; }
+.social-card { break-inside: avoid; width: 100%; margin: 0 0 14px; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-card); overflow: hidden; transition: border-color 0.15s; }
+.social-card:hover { border-color: var(--border-hover); }
+.social-chip { width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.social-chip svg { width: 17px; height: 17px; fill: #fff; }
+.social-letter { color: #fff; font-family: var(--font-sans); font-weight: 800; font-size: 14px; line-height: 1; }
+.social-head { display: flex; align-items: center; gap: 10px; padding: 11px 13px 10px; }
+.social-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.social-plat { font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); }
+.social-cap { font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
 .social-embed { position: relative; width: 100%; }
-.social-embed iframe { width: 100%; border: 0; border-radius: var(--radius-tight); display: block; background: var(--surface-2); }
+.social-embed iframe { width: 100%; border: 0; display: block; background: var(--surface-2); }
 .social-embed blockquote { margin: 0 !important; }
-.social-link { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent-cyan); text-decoration: none; transition: color 0.15s; }
+.social-link { display: inline-flex; align-items: center; gap: 5px; padding: 9px 13px 11px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent-cyan); text-decoration: none; transition: color 0.15s; }
 .social-link .ext { font-size: 13px; }
 .social-link:hover { color: var(--accent-orange); }
-.social-card.social-cls-link .social-link { font-size: 13px; }
-/* Embeds can't print and don't exist on screen offline — the "View on …" link
-   is always there as the fallback. In every print mode, show links only. */
-@media print { .social-embed { display: none !important; } .social-link { color: #111 !important; } }
+/* PROFILE card — the whole card is a designed brand-coloured link tile. */
+.social-profile { display: flex; align-items: center; gap: 12px; padding: 15px 14px; text-decoration: none; }
+.social-profile .social-chip { width: 44px; height: 44px; border-radius: 11px; }
+.social-profile .social-chip svg { width: 24px; height: 24px; }
+.social-profile .social-letter { font-size: 20px; }
+.social-profile .social-meta { flex: 1; gap: 3px; }
+.social-profile .social-plat { color: var(--brand); }
+.social-profile .social-cap { color: var(--text-primary); font-size: 13.5px; font-weight: 600; }
+.social-handle { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.social-go { color: var(--text-dim); font-size: 20px; flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
+.social-profile:hover .social-go { color: var(--brand); transform: translate(2px, -2px); }
+.social-profile:hover .social-cap { color: var(--brand); }
+
+/* ── Overview "Featured" board ─── "Latest from" (pinned socials, 2-up) +
+   "Highlights" (featured work items that jump to their full entry). Both
+   strips JS-rendered + hidden until filled, so the board leaves no residue. */
+.overview-featured { display: flex; flex-direction: column; gap: 18px; margin: 24px 0 2px; }
+.overview-strip[hidden] { display: none; }
+.overview-strip-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 9px; }
+.overview-strip-title { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent-orange); }
+.overview-seeall { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+.overview-seeall .material-symbols-rounded { font-size: 13px; }
+.overview-seeall:hover { color: var(--accent-orange); }
+.overview-latest { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: stretch; }
+.overview-latest .social-card { display: flex; flex-direction: column; }
+.overview-latest .social-cls-profile .social-profile { flex: 1; }
+.overview-highlights { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.feature-card { display: flex; align-items: center; gap: 11px; padding: 12px 13px; background: var(--card-bg); border: 1px solid var(--border-default); border-left: 3px solid var(--accent); border-radius: var(--radius-card); text-decoration: none; transition: border-color 0.15s, background 0.15s, transform 0.15s; }
+.feature-card:hover { background: var(--card-bg-hover); transform: translateY(-1px); }
+.feature-chip { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--surface-2); border: 1px solid var(--border-default); overflow: hidden; }
+.feature-chip img { width: 22px; height: 22px; object-fit: contain; }
+.feature-chip .material-symbols-rounded { font-size: 19px; color: var(--accent); }
+.feature-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.feature-kicker { font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); }
+.feature-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.005em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feature-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feature-go { color: var(--text-dim); font-size: 18px; flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
+.feature-card:hover .feature-go { color: var(--accent); transform: translateX(2px); }
+
+/* Embeds can't print / don't exist offline; profile cards always work. Print: links only. */
+@media print { .social-embed { display: none !important; } .social-link, .social-handle { color: #111 !important; } }
 .skill-cell {
   display: flex; align-items: center; gap: 10px;
   background: var(--card-bg);
