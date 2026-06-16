@@ -28,7 +28,7 @@
   // <meta name="hope:share-url"> content, which the publish skill rewrites to
   // the live GitHub Pages URL. Empty (un-published) → window.location.href.
   // SAMPLE LIMITATION: getName()/getShareText() read the FIRST h1.name /
-  // .headline in the DOM — Jane Doe, the default persona — regardless of
+  // .headline in the DOM — Elon Doe, the default persona — regardless of
   // which demo persona is selected in the controls panel.
   var shareBtn = document.getElementById('share-btn');
   var shareMenu = document.getElementById('share-menu');
@@ -384,10 +384,10 @@
   //   summary → the summary paragraph · experience / skills / education /
   //   certifications / projects → that pane (tile activated first).
   // SAMPLE TWIST vs the template's single-owner page: persona-scoped targets
-  // (photo, summary, the Jane-only #pane-overview) resolve via
+  // (photo, summary, the Elon-only #pane-overview) resolve via
   // :not([data-persona-hidden="true"]) so the spotlight always lands on the
   // ACTIVE persona's element — switching personas needs no extra wiring. The
-  // Jane-only throughline goes inert for other personas through the
+  // Elon-only throughline goes inert for other personas through the
   // getClientRects() visibility guard (its card is display:none then).
   // Plays on load AND on hashchange: scroll into view (smooth; auto under
   // prefers-reduced-motion), then ~3 soft pulses over ~3s via .hope-spotlight
@@ -401,7 +401,7 @@
       highlights: { sel: '#pane-overview:not([data-persona-hidden="true"])', pane: 'overview' },
       share: { sel: '#share-btn' },
       pdf: { sel: '#pdf-btn' },
-      photo: { sel: '.identity-card:not([data-persona-hidden="true"]) .photo-upload' },
+      photo: { sel: '.photo-upload:not([data-persona-hidden="true"])' },
       summary: { sel: '.summary:not([data-persona-hidden="true"])' },
       experience: { sel: '.section-pane[data-pane="experience"]', pane: 'experience' },
       skills: { sel: '.section-pane[data-pane="skills"]', pane: 'skills' },
@@ -430,7 +430,7 @@
         var paneBtn = document.querySelector('.section-btn[data-section="' + entry.pane + '"]');
         if (paneBtn) paneBtn.click();
       }
-      if (el.getClientRects().length === 0) { clearSpotlightHash(); return; } // hidden (e.g. non-Jane throughline) — directive is inert
+      if (el.getClientRects().length === 0) { clearSpotlightHash(); return; } // hidden (e.g. non-Elon throughline) — directive is inert
       var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
       el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
       if (spotTimer) { clearTimeout(spotTimer); spotTimer = 0; }
@@ -466,7 +466,7 @@
       clearSpotlightHash();
     }
     // One tick deferred: the throughline build AND the initial
-    // setPersona('jane') — which stamps every [data-persona-hidden] attribute
+    // setPersona('elon') — which stamps every [data-persona-hidden] attribute
     // and owns the default-open tile — run LATER in this same synchronous
     // pass, so targets are resolved only after the outer IIFE has finished
     // (a played pane activation must not be clobbered by setPersona's reset).
@@ -497,7 +497,7 @@
   // Overview-default-open logic (the sample's mirror of the template's
   // {{#show_summary}} promotion/strip residue) work untouched.
   // This block runs synchronously here (classic script, end of body),
-  // before the initial setPersona('jane') at the bottom of this IIFE — both
+  // before the initial setPersona('elon') at the bottom of this IIFE — both
   // before first paint, so there is no relocation flash at load. The MQ
   // 'change' listener covers resize in BOTH directions. Print stays
   // single-column with the summary in-card: beforeprint moves them home
@@ -506,31 +506,78 @@
   // media query, so the DOM must be restored explicitly there (the CSS side
   // is gated with body:not(...) classes).
   var railsMql = window.matchMedia ? window.matchMedia('(min-width: 1792px)') : null;
-  var railSummaries = [];
-  document.querySelectorAll('.identity-card .identity-info > .summary').forEach(function (s) {
-    railSummaries.push({ node: s, home: s.parentNode }); // home = the persona card's .identity-info
+  // Wide-screen rails: the WHOLE identity (photo + the full .identity-info —
+  // name, headline, LIVE pill, stats, contact, summary) rides into the left
+  // rail, photo on top. Only the timeline (#throughline) stays in the centre
+  // card, where it picks up a "Career Timeline" eyebrow. Each moved node gets
+  // its own [data-persona] (copied from its card) so setPersona's [data-persona]
+  // sweep keeps gating it once it leaves the card; we mirror the card's current
+  // data-persona-hidden so the first paint is gated too. nextSibling captures
+  // the exact in-card slot for an exact restore.
+  var railUnits = [];
+  document.querySelectorAll('.identity-card').forEach(function (card) {
+    var key = card.getAttribute('data-persona') || '';
+    var dph = card.getAttribute('data-persona-hidden');
+    var photo = card.querySelector('.photo-upload');
+    var info = card.querySelector('.identity-row > .identity-info');
+    var summary = info && info.querySelector('.summary'); // About → moves to the RIGHT rail, above the app selector
+    [photo, info].forEach(function (el) {
+      if (!el) return;
+      if (key) el.setAttribute('data-persona', key);
+      if (dph != null) el.setAttribute('data-persona-hidden', dph);
+    });
+    railUnits.push({
+      photo: photo, photoHome: photo && photo.parentNode, photoNext: photo && photo.nextSibling,
+      info: info, infoHome: info && info.parentNode, infoNext: info && info.nextSibling,
+      summary: summary, summaryHome: summary && summary.parentNode, summaryNext: summary && summary.nextSibling
+    });
   });
   var railAside = null;
+  function mountEyebrows() {
+    // "Career Timeline" eyebrow above each standalone strip. CSS :has() gates it
+    // to a *visible* strip, so an empty/absent timeline shows no orphan header.
+    document.querySelectorAll('.identity-card > .tl-strip').forEach(function (strip) {
+      var prev = strip.previousElementSibling;
+      if (prev && prev.classList.contains('tl-rail-eyebrow')) return;
+      var eb = document.createElement('div');
+      eb.className = 'tl-rail-eyebrow';
+      eb.setAttribute('aria-hidden', 'true');
+      eb.textContent = 'Career Timeline';
+      strip.parentNode.insertBefore(eb, strip);
+    });
+  }
+  function unmountEyebrows() {
+    document.querySelectorAll('.tl-rail-eyebrow').forEach(function (eb) {
+      if (eb.parentNode) eb.parentNode.removeChild(eb);
+    });
+  }
   function mountRails() {
-    if (!railSummaries.length) return; // no summaries in this build — grid-only rails via CSS
+    if (!railUnits.length) return; // no identity in this build — grid-only rails via CSS
     if (!railAside) {
       railAside = document.createElement('aside');
       railAside.className = 'summary-rail';
-      railAside.setAttribute('aria-label', 'About');
+      railAside.setAttribute('aria-label', 'Profile');
     }
     if (!railAside.parentNode) {
       var wrap = document.querySelector('.wrap');
       if (wrap) wrap.appendChild(railAside);
     }
-    railSummaries.forEach(function (r) {
-      if (r.node.parentNode !== railAside) railAside.appendChild(r.node);
+    var aboutRail = document.querySelector('.about-rail');
+    railUnits.forEach(function (u) {
+      if (u.photo && u.photo.parentNode !== railAside) railAside.appendChild(u.photo); // photo on top
+      if (u.info && u.info.parentNode !== railAside) railAside.appendChild(u.info);
+      if (aboutRail && u.summary && u.summary.parentNode !== aboutRail) aboutRail.appendChild(u.summary); // About → right rail, above the app selector
     });
+    mountEyebrows();
   }
   function unmountRails() {
-    // appendChild = the original slot: every summary is its .identity-info's last child.
-    railSummaries.forEach(function (r) {
-      if (r.node.parentNode !== r.home) r.home.appendChild(r.node);
+    // Restore each node to its exact pre-rail slot.
+    railUnits.forEach(function (u) {
+      if (u.summary && u.summaryHome && u.summary.parentNode !== u.summaryHome) u.summaryHome.insertBefore(u.summary, u.summaryNext); // About back into its identity-info
+      if (u.info && u.infoHome && u.info.parentNode !== u.infoHome) u.infoHome.insertBefore(u.info, u.infoNext);
+      if (u.photo && u.photoHome && u.photo.parentNode !== u.photoHome) u.photoHome.insertBefore(u.photo, u.photoNext);
     });
+    unmountEyebrows();
     if (railAside && railAside.parentNode) railAside.parentNode.removeChild(railAside);
   }
   function syncRails() {
@@ -541,7 +588,7 @@
     if (railsMql.addEventListener) railsMql.addEventListener('change', syncRails);
     else if (railsMql.addListener) railsMql.addListener(syncRails);
   }
-  window.addEventListener('beforeprint', unmountRails); // every print mode is single-column; summary prints in-card
+  window.addEventListener('beforeprint', unmountRails); // every print mode is single-column; identity prints in-card
   window.addEventListener('afterprint', syncRails);
 
   // ─── Photo upload (matches production storage key for portability) ─
@@ -618,12 +665,17 @@
   // (The one app that loads third-party embed scripts/iframes — Hope is
   // otherwise self-contained; a disclosed trade-off, see skills/portfolio.)
   (function () {
-    var grid = document.getElementById('social-grid');             // the full Social pane
-    var latestEl = document.getElementById('overview-latest');     // Overview · "Latest from"
-    var hlEl = document.getElementById('overview-highlights');      // Overview · "Highlights"
-    var posts = (window.HOPE_DATA && Array.isArray(window.HOPE_DATA.social)) ? window.HOPE_DATA.social : [];
-    var timeline = (window.HOPE_DATA && Array.isArray(window.HOPE_DATA.timeline)) ? window.HOPE_DATA.timeline : [];
-    if (!grid && !latestEl && !hlEl) return;
+    // PER-PERSONA (sample): every persona ships its own social[] on
+    // window.HOPE_PERSONAS[id].social (data/<id>.js). Each persona's Social
+    // grid, overview "Latest from", and contact-row pills are scoped to that
+    // persona's markup (gated by data-persona) and rendered at load;
+    // data-persona-hidden shows the active one. The template folder keeps the
+    // single-owner window.HOPE_DATA; here social lives per persona.
+    var PERSONAS = window.HOPE_PERSONAS || {};
+    function socialOf(p) { return (PERSONAS[p] && Array.isArray(PERSONAS[p].social)) ? PERSONAS[p].social : []; }
+    function timelineOf(p) { return (p === 'elon' && window.HOPE_DATA && Array.isArray(window.HOPE_DATA.timeline)) ? window.HOPE_DATA.timeline : []; }
+    function activePersona() { var b = document.querySelector('.persona-btn.active'); return b ? b.getAttribute('data-persona') : 'elon'; }
+    if (!Object.keys(PERSONAS).length) return;
 
     function esc(s) {
       return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -712,31 +764,69 @@
     }
 
     var needsProcess = {};
+    function processEmbeds() {
+      Object.keys(needsProcess).forEach(function (k) {
+        var cfg = needsProcess[k];
+        if (window[cfg.global]) { try { cfg.process(); } catch (e) {} }
+      });
+    }
+    // Live third-party embeds only load over http(s); on file:// the platforms
+    // refuse the frame, so there we render a designed preview card that links
+    // out instead of a column of blank frames.
+    var EMBEDS_OK = (location.protocol === 'http:' || location.protocol === 'https:');
+    // Lazy embed loader — a card's iframe/blockquote is created only when the
+    // card nears the viewport. Cards in a hidden pane/persona (display:none)
+    // never intersect, so their embeds don't load until shown. This turns a cold
+    // start from ~50 simultaneous iframes (which the browser throttles, so some
+    // never finish) into just the few actually on screen.
+    var embedIO = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting && en.target.__loadEmbed) { embedIO.unobserve(en.target); en.target.__loadEmbed(); }
+      });
+    }, { rootMargin: '400px 0px' }) : null;
+    function lazyEmbed(holder, fill) {
+      holder.__loadEmbed = function () { holder.__loadEmbed = null; holder.removeAttribute('data-embed-pending'); fill(); };
+      if (embedIO) embedIO.observe(holder); else holder.__loadEmbed();
+    }
+
     function buildSocialCard(post) {
       var key = String(post.platform || 'link').toLowerCase();
       var cfg = P[key] || P.link;
       var url = String(post.url);
       var name = cfg.name;
-      // Resolve an embed if the URL is embeddable; otherwise it's a profile card.
-      var embed = '';
+      // Resolve the embed MARKUP (not yet injected) when the URL is embeddable.
+      var embedHTML = null, embedScript = null, embedH = cfg.h || 240;
       if (cfg.cls === 'iframe') {
         var src = null; try { src = cfg.src(url); } catch (e) { src = null; }
-        if (src) embed = '<div class="social-embed"><iframe src="' + esc(src) + '" height="' + (cfg.h || 240)
-          + '" loading="lazy" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen title="' + esc(name) + ' embed"></iframe></div>';
+        if (src) embedHTML = '<iframe src="' + esc(src) + '" height="' + embedH
+          + '" loading="lazy" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen title="' + esc(name) + ' embed"></iframe>';
       } else if (cfg.cls === 'script' && (!POST_RE[key] || POST_RE[key].test(url))) {
-        try { embed = '<div class="social-embed">' + cfg.block(url) + '</div>'; } catch (e) { embed = ''; }
-        loadScript(cfg.script);
-        if (cfg.process) needsProcess[key] = cfg;
+        try { embedHTML = cfg.block(url); } catch (e) { embedHTML = null; }
+        if (embedHTML) embedScript = cfg.script;
       }
       var card = document.createElement('article');
       var meta = '<span class="social-meta"><span class="social-plat">' + esc(name) + '</span>'
         + (post.caption ? '<span class="social-cap">' + esc(post.caption) + '</span>' : '');
-      if (embed) {
-        // EMBED CARD — branded header + the live embed + a quiet view link.
+      var head = '<div class="social-head">' + chip(key, name) + meta + '</span></div>';
+      var viewLink = '<a class="social-link" href="' + esc(url) + '" target="_blank" rel="noopener">'
+        + esc(post.title || ('View on ' + name)) + '<span class="material-symbols-rounded ext">open_in_new</span></a>';
+      if (embedHTML != null && EMBEDS_OK) {
+        // EMBED CARD — header + a placeholder that lazy-loads the live embed when
+        // scrolled into view + a quiet view link.
         card.className = 'social-card social-' + key + ' social-cls-embed';
-        card.innerHTML = '<div class="social-head">' + chip(key, name) + meta + '</span></div>' + embed
-          + '<a class="social-link" href="' + esc(url) + '" target="_blank" rel="noopener">'
-          + esc(post.title || ('View on ' + name)) + '<span class="material-symbols-rounded ext">open_in_new</span></a>';
+        card.innerHTML = head + '<div class="social-embed" data-embed-pending style="min-height:' + embedH + 'px"></div>' + viewLink;
+        var holder = card.querySelector('.social-embed');
+        lazyEmbed(holder, function () {
+          // Keep the min-height as a floor so the card never collapses while a
+          // tweet/IG widget is still rendering; the embed grows past it if taller.
+          holder.innerHTML = embedHTML;
+          if (embedScript) { loadScript(embedScript); if (cfg.process) { needsProcess[key] = cfg; setTimeout(processEmbeds, 120); setTimeout(processEmbeds, 1500); } }
+        });
+      } else if (embedHTML != null) {
+        // file:// — a designed preview card that links out (never a blank frame).
+        card.className = 'social-card social-' + key + ' social-cls-embed social-cls-static';
+        card.innerHTML = head + '<a class="social-embed-static" href="' + esc(url) + '" target="_blank" rel="noopener">'
+          + '<span class="material-symbols-rounded">open_in_new</span>View on ' + esc(name) + '</a>';
       } else {
         // PROFILE CARD — the whole card is a designed, brand-coloured link tile.
         card.className = 'social-card social-' + key + ' social-cls-profile';
@@ -750,7 +840,7 @@
     // Featured WORK item (from the timeline) → a compact card that jumps to its
     // full entry. type drives the kicker + accent (same palette as the rail).
     var FT_LABEL = { experience: 'Experience', project: 'Project', education: 'Education', certification: 'Certification' };
-    var FT_COLOR = { experience: 'var(--accent-slate)', project: 'var(--accent-cyan)', education: 'var(--accent-violet)', certification: 'var(--accent-amber)' };
+    var FT_COLOR = { experience: 'var(--app-experience)', project: 'var(--app-projects)', education: 'var(--app-education)', certification: 'var(--app-certifications)' };
     var FT_ICON = { experience: 'work', project: 'rocket_launch', education: 'school', certification: 'verified' };
     function buildFeatureCard(e) {
       var type = String(e.type || 'experience').toLowerCase();
@@ -772,55 +862,213 @@
     }
     var valid = function (p) { return p && typeof p === 'object' && p.url; };
 
-    // FEED — the full Social pane (every post; masonry via .social-grid CSS).
-    if (grid) posts.filter(valid).forEach(function (post) { grid.appendChild(buildSocialCard(post)); });
-
-    // OVERVIEW · "Latest from" — up to 2 pinned socials, rendered as real cards.
-    if (latestEl) {
-      var pinned = posts.filter(function (p) { return valid(p) && p.pinned; }).slice(0, 2);
-      pinned.forEach(function (post) { latestEl.appendChild(buildSocialCard(post)); });
-      var lw = document.getElementById('ov-latest-wrap');
-      if (lw && pinned.length) lw.hidden = false;
+    // Whether a post resolves to a real EMBED (an iframe src, or a script embed
+    // pointed at a single POST — not a profile). Non-embeddable → profile card
+    // in the feed + an app-name pill in the headline; never a bland link card.
+    function isEmbeddable(p) {
+      if (!valid(p)) return false;
+      var k = String(p.platform || 'link').toLowerCase();
+      var cfg = P[k];
+      if (!cfg) return false;
+      if (cfg.cls === 'iframe') { try { return !!cfg.src(String(p.url)); } catch (e) { return false; } }
+      if (cfg.cls === 'script') { return !POST_RE[k] || POST_RE[k].test(String(p.url)); }
+      return false; // 'link' / unknown
+    }
+    function platLabel(p) {
+      var k = String(p.platform || 'link').toLowerCase();
+      return k === 'link' ? 'Website' : ((P[k] || P.link).name);
     }
 
-    // OVERVIEW · "Highlights" — featured work items (timeline) that jump to entry.
-    if (hlEl) {
-      var feat = timeline.filter(function (e) { return e && e.featured; });
-      feat.forEach(function (e) { hlEl.appendChild(buildFeatureCard(e)); });
-      var hw = document.getElementById('ov-highlights-wrap');
-      if (hw && feat.length) {
-        hw.hidden = false;
-        hlEl.addEventListener('click', function (ev) {
-          var a = ev.target.closest('[data-jump]'); if (!a) return;
-          ev.preventDefault();
-          var btn = document.querySelector('.section-btn[data-section="' + a.getAttribute('data-pane') + '"]');
-          if (btn) btn.click();
-          var card = document.getElementById(a.getAttribute('data-jump'));
-          if (card) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            card.classList.add('hope-spotlight');
-            setTimeout(function () { card.classList.remove('hope-spotlight'); }, 2400);
-          }
+    // Overview "Latest from": EMBEDS ONLY (a link card would stretch to the
+    // embed height and leave a dead gap; those go to the headline). Default =
+    // pinned embeds, else the first 2 embeddable. The sample's demo panel can
+    // re-pick live via 'hope:set-featured'; a real portfolio renders the baked set.
+    var FEATURED_MAX = 2;
+    function defaultFeatured(embeddable) {
+      var pinned = embeddable.filter(function (p) { return p.pinned; }).map(function (p) { return String(p.url); });
+      if (pinned.length >= FEATURED_MAX) return pinned.slice(0, FEATURED_MAX);
+      // Top up with the first non-pinned embeds so the overview always shows 2,
+      // even when a pinned post is a non-embeddable essay/link.
+      var rest = embeddable.filter(function (p) { return !p.pinned; }).map(function (p) { return String(p.url); });
+      return pinned.concat(rest).slice(0, FEATURED_MAX);
+    }
+    function renderLatestInto(latestEl, embeddable, urls) {
+      if (!latestEl) return;
+      var list = (urls && typeof urls.length === 'number') ? urls : defaultFeatured(embeddable);
+      latestEl.innerHTML = '';
+      var n = 0;
+      list.slice(0, FEATURED_MAX).forEach(function (u) {
+        var post = null;
+        embeddable.forEach(function (p) { if (String(p.url) === String(u)) post = p; }); // embeds only
+        if (post) { latestEl.appendChild(buildSocialCard(post)); n++; }
+      });
+      var wrap = latestEl.closest('.ov-latest-wrap');
+      if (wrap) wrap.hidden = !n;
+    }
+
+    // ── Per-persona render, SPLIT so the visible bits come first ──
+    // renderOverview(p): contact-row pills + overview "Latest from" (2 embeds) +
+    //   Highlights — the content of the default-open Overview pane.
+    // renderFeed(p): the Social pane grid (only seen when Social is opened).
+    // Both are idempotent (guarded) so the priority pass and the on-switch
+    // ensurePersona() never double-render.
+    var doneOv = {}, doneFeed = {};
+
+    function renderOverview(p) {
+      if (doneOv[p]) return; doneOv[p] = 1;
+      var all = socialOf(p).filter(valid);
+      var posts = all.filter(function (q) { return !q.headline; });
+      var embeddable = posts.filter(isEmbeddable);
+
+      // Contact-row pills (profiles, headline:true).
+      var idcard = document.querySelector('.identity-card[data-persona="' + p + '"]');
+      var row = idcard ? idcard.querySelector('.contact-row') : null;
+      if (row) {
+        row.querySelectorAll('.social-headline-link').forEach(function (el) { if (el.parentNode) el.parentNode.removeChild(el); });
+        all.filter(function (q) { return q.headline; }).forEach(function (q) {
+          var k = String(q.platform || 'link').toLowerCase();
+          var b = B[k] || B.link;
+          var glyph = b.i ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + b.i + '</svg>'
+                          : '<span class="material-symbols-rounded">link</span>';
+          var a = document.createElement('a');
+          a.className = 'item social-headline-link';
+          a.href = String(q.url); a.target = '_blank'; a.rel = 'noopener';
+          a.setAttribute('data-platform', k);
+          a.innerHTML = glyph + esc(platLabel(q));
+          row.appendChild(a);
         });
+      }
+
+      var ovPane = document.querySelector('.section-pane[data-pane="overview"][data-persona="' + p + '"]');
+      // "Latest from" — top 2 embeds (lazy; load when the Overview is on screen).
+      var latestEl = ovPane ? ovPane.querySelector('.overview-latest') : null;
+      if (latestEl) renderLatestInto(latestEl, embeddable, null);
+
+      // "Highlights" — featured work items (Elon ships the only featured timeline).
+      var hlEl = ovPane ? ovPane.querySelector('.overview-highlights') : null;
+      if (hlEl) {
+        var feat = timelineOf(p).filter(function (e) { return e && e.featured; });
+        hlEl.innerHTML = '';
+        feat.forEach(function (e) { hlEl.appendChild(buildFeatureCard(e)); });
+        var hw = hlEl.closest('.ov-highlights-wrap');
+        if (hw && feat.length) {
+          hw.hidden = false;
+          hlEl.addEventListener('click', function (ev) {
+            var a = ev.target.closest('[data-jump]'); if (!a) return;
+            ev.preventDefault();
+            var anchor = a.getAttribute('data-jump');
+            var btn = document.querySelector('.section-btn[data-section="' + a.getAttribute('data-pane') + '"]');
+            if (btn) btn.click();
+            var card = document.getElementById(anchor);
+            if (card) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              card.classList.add('hope-spotlight');
+              setTimeout(function () { card.classList.remove('hope-spotlight'); }, 2400);
+            }
+            try { document.dispatchEvent(new CustomEvent('hope:scrub', { detail: { anchor: anchor } })); } catch (e) {}
+          });
+          document.addEventListener('hope:tlnode', function (ev) {
+            var anchor = ev && ev.detail && ev.detail.anchor; if (!anchor) return;
+            var match = hlEl.querySelector('[data-jump="' + anchor + '"]');
+            if (!match) return;
+            var cs = hlEl.querySelectorAll('.feature-card');
+            for (var ci = 0; ci < cs.length; ci++) cs[ci].classList.toggle('tl-live', cs[ci] === match);
+          });
+        }
       }
     }
 
-    // Script-class platforms that need an explicit processor once their script
-    // lands and the blockquotes are in the DOM (Instagram). Twitter/TikTok
-    // widgets auto-observe new nodes, so they need no nudge.
-    Object.keys(needsProcess).forEach(function (k) {
-      var cfg = needsProcess[k];
-      var t = setInterval(function () { if (window[cfg.global]) { try { cfg.process(); } catch (e) {} clearInterval(t); } }, 400);
-      setTimeout(function () { clearInterval(t); }, 8000);
+    function renderFeed(p) {
+      if (doneFeed[p]) return; doneFeed[p] = 1;
+      var posts = socialOf(p).filter(valid).filter(function (q) { return !q.headline; });
+      var grid = document.querySelector('.social-grid[data-persona="' + p + '"]');
+      if (grid) { grid.innerHTML = ''; posts.forEach(function (post) { grid.appendChild(buildSocialCard(post)); }); }
+    }
+
+    function ensurePersona(p) { renderOverview(p); renderFeed(p); }
+
+    // Reliable embed trigger. IntersectionObserver alone is flaky for cards built
+    // while their pane/persona was display:none and then revealed (the observer
+    // may not re-fire on the show) — THIS is why switching to e.g. Dario could
+    // leave its embeds blank. So on every reveal we also explicitly load the
+    // now-visible pending embeds. offsetParent === null means an ancestor is
+    // display:none, so only genuinely on-screen cards load (still lazy).
+    function fillVisible() {
+      var pend = document.querySelectorAll('.social-embed[data-embed-pending]');
+      for (var i = 0; i < pend.length; i++) {
+        var h = pend[i];
+        // offsetParent === null ⇒ an ancestor is display:none (a hidden
+        // persona/pane), so it stays lazy. Everything on the one currently-
+        // visible pane loads now — at most ~9 embeds (one persona, one pane),
+        // never the whole 9-persona set at once.
+        if (h.offsetParent !== null && h.__loadEmbed) h.__loadEmbed();
+      }
+    }
+    var fvT = 0;
+    function fillVisibleSoon() { if (fvT) return; fvT = setTimeout(function () { fvT = 0; fillVisible(); }, 60); }
+
+    // PRIORITY LOAD ORDER — the default persona's Overview first (it's the
+    // visible, default-open pane), then on idle: the default's feed, then every
+    // other persona's overview->feed in turn. Embeds inside are lazy, so only the
+    // on-screen ones fetch; this sequences the cheap DOM build so the first paint
+    // is the default Overview, not a 9-persona stampede.
+    var active = activePersona();
+    renderOverview(active);
+    var others = Object.keys(PERSONAS).filter(function (p) { return p !== active; });
+    var steps = [function () { renderFeed(active); }];
+    others.forEach(function (p) {
+      steps.push(function () { renderOverview(p); });
+      steps.push(function () { renderFeed(p); });
     });
+    var ric = window.requestIdleCallback || function (cb) { return setTimeout(cb, 16); };
+    (function pump() {
+      if (!steps.length) return;
+      try { steps.shift()(); } catch (e) {}
+      ric(pump);
+    })();
+
+    // Load on-screen embeds on every reveal: pane switch (section tiles), persona
+    // switch (setPersona calls fillVisible too), and scroll/resize. Capture-phase
+    // scroll catches inner scroll containers, not just the window.
+    document.querySelectorAll('.section-btn').forEach(function (b) { b.addEventListener('click', fillVisibleSoon); });
+    window.addEventListener('scroll', fillVisibleSoon, true);
+    window.addEventListener('resize', fillVisibleSoon);
+    fillVisibleSoon();
+
+    // Instagram needs an explicit processor once its script lands; embeds appear
+    // over time (lazy + deferred), so sweep periodically for the first seconds.
+    // Twitter/TikTok widgets auto-observe new nodes, so they need no nudge.
+    var peTimer = setInterval(processEmbeds, 600);
+    setTimeout(function () { clearInterval(peTimer); }, 10000);
+
+    // Demo panel (sample-only) re-picks the ACTIVE persona's "Latest from".
+    document.addEventListener('hope:set-featured', function (ev) {
+      var p = activePersona();
+      var ovPane = document.querySelector('.section-pane[data-pane="overview"][data-persona="' + p + '"]');
+      var latestEl = ovPane ? ovPane.querySelector('.overview-latest') : null;
+      renderLatestInto(latestEl, socialOf(p).filter(valid).filter(function (q) { return !q.headline; }).filter(isEmbeddable), ev && ev.detail && ev.detail.urls);
+    });
+
+    // Sample-only API: the demo "Featured socials" picker + the on-switch render
+    // guarantee (setPersona calls ensure() so a switch shows content at once).
+    window.HOPE_SOCIAL = {
+      max: FEATURED_MAX,
+      ensure: ensurePersona,
+      fillVisible: fillVisible,
+      embeddableFor: function (p) {
+        return socialOf(p).filter(valid).filter(function (q) { return !q.headline; }).filter(isEmbeddable).map(function (q) {
+          return { url: String(q.url), label: platLabel(q), pinned: !!q.pinned };
+        });
+      }
+    };
   })();
 
   // ─── THE THROUGHLINE — chronological strip in the identity card ────
-  // Data: window.HOPE_DATA (SAMPLE SPLIT: defined in data/jane.js — Jane,
+  // Data: window.HOPE_DATA (SAMPLE SPLIT: defined in data/elon.js — Elon,
   // the default persona, is the only one shipping a timeline in this
   // sample; the other data/<persona>.js document the omission. In the
   // template folder the global lives in data.js). Shell: #throughline in
-  // index.html (bottom of Jane's identity card); visuals: the tl-* block
+  // index.html (bottom of Elon's identity card); visuals: the tl-* block
   // in portfolio.css. This code BUILDS the rail (track, year ticks, hex
   // nodes, playhead + traveler, tooltip) and DRIVES the play loop: the
   // playhead advances one node per second, looping. Every DOM write
@@ -829,15 +1077,14 @@
   // the strip is hovered or focused, while the tab is hidden
   // (visibilitychange), while the strip is off-viewport
   // (IntersectionObserver — which also covers persona switches: hiding
-  // Jane's card takes the strip out of view), and entirely under
+  // Elon's card takes the strip out of view), and entirely under
   // prefers-reduced-motion (static rail — .tl-static). Published mode:
   // deliberately NOT gated — the Throughline is a visitor feature, like
   // theme toggle and Share. Demo-controls note: a node click navigates to
   // its anchor card; if a demo filter currently hides that card the
   // scroll/flash is a no-op — nothing breaks.
   (function () {
-    var strip = document.getElementById('throughline');
-    var hopeData = window.HOPE_DATA || {};
+    function buildTimeline(strip, hopeData) {
     var timeline = Array.isArray(hopeData.timeline) ? hopeData.timeline : [];
     var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     function parseYM(s) { // "YYYY-MM" → months since year 0, or null
@@ -870,6 +1117,7 @@
       });
     });
     if (!strip || entries.length === 0) return; // no timeline → strip stays hidden
+    entries.sort(function (a, b) { return a.startM - b.startM; }); // forward-flowing: always oldest → newest, left → right
 
     var now = new Date();
     var nowM = now.getFullYear() * 12 + now.getMonth();
@@ -1017,7 +1265,7 @@
     // assets/icons/travelers/ — classic-script law: no fetch, ever);
     // { inline: "<svg…>" } → a generator-inlined custom SVG. Anything else
     // falls back to the dot. No picker UI here — the choice arrives via the
-    // data file (window.HOPE_DATA.traveler; Jane rides "paper-plane").
+    // data file (window.HOPE_DATA.traveler; Elon rides "rocket").
     var TRAVELER_SVGS = {
       'paper-plane': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>',
       'car': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>',
@@ -1050,7 +1298,7 @@
     // any traveler live. The real artifact has no picker UI; the choice
     // arrives via the data file (the skill asks in chat).
     var demoTrav = document.getElementById('demo-traveler');
-    if (demoTrav) {
+    if (demoTrav && strip.id === 'throughline') { // demo traveler picker drives Elon's strip only
       if (typeof travPref === 'string' && TRAVELER_SVGS.hasOwnProperty(travPref)) demoTrav.value = travPref;
       demoTrav.addEventListener('change', function () {
         var v = demoTrav.value;
@@ -1120,6 +1368,9 @@
       playhead.style.transform = 'translate(' + playheadX(i) + 'px, ' + (-entries[i].lift).toFixed(1) + 'px)'; // transform-only motion — the traveler climbs the ridge
       traveler.classList.toggle('tl-flip', !!backward); // face backward on the loop wrap
       current = i;
+      // Sync the Overview Highlights to the playhead — the curated card whose
+      // entry the timeline is on lights up (option A: keep curation, add sync).
+      try { document.dispatchEvent(new CustomEvent('hope:tlnode', { detail: { anchor: entries[i].anchor } })); } catch (e) {}
     }
     function schedule(i, backward) {
       if (rafId) cancelAnimationFrame(rafId);
@@ -1145,6 +1396,13 @@
     }
     if (reduced) setStatic(true); else schedule(0, false); // park on the first node
     window.setInterval(tick, 1000); // the 1s cadence; tick() no-ops while paused
+    // Two-way: a Highlight card (or any UI) can scrub the playhead to its entry.
+    document.addEventListener('hope:scrub', function (ev) {
+      var anchor = ev && ev.detail && ev.detail.anchor; if (!anchor) return;
+      for (var si = 0; si < entries.length; si++) {
+        if (entries[si].anchor === anchor) { if (!reduced) schedule(si, si < current); break; }
+      }
+    });
     if (reducedMq) {
       var onReducedChange = function () { reduced = reducedMq.matches; setStatic(reduced); };
       if (reducedMq.addEventListener) reducedMq.addEventListener('change', onReducedChange);
@@ -1199,6 +1457,45 @@
         setTimeout(function () { card.classList.remove('tl-flash'); }, 1300);
       });
     });
+    } // ─── end buildTimeline(strip, hopeData) ───
+
+    // Derive a timeline from a persona's experience + education cards already in
+    // the DOM — start year, label, org, and an auto-assigned anchor for jump.
+    // (Elon keeps her curated window.HOPE_DATA.timeline, which carries metrics.)
+    function deriveTimeline(persona) {
+      var out = [];
+      function add(card, type, pane, sy, ey, titleSel, orgSel, key) {
+        if (!sy) return;
+        var anchor = card.id || ('tl-' + persona + '-' + key);
+        if (!card.id) card.id = anchor;
+        var label = ((card.querySelector(titleSel) || {}).textContent || '').trim();
+        var org = ((card.querySelector(orgSel) || {}).textContent || '').trim().split(' · ')[0];
+        out.push({ type: type, date_start: sy + '-01', date_end: ey ? ey + '-12' : '', label: label, org: org, pane: pane, anchor: anchor });
+      }
+      document.querySelectorAll('[data-pane="experience"] .item-card[data-persona="' + persona + '"]').forEach(function (c, i) {
+        var dates = ((c.querySelector('.role-dates') || {}).textContent || '');
+        var ys = dates.match(/(?:19|20)\d{2}/g);
+        var ey = /present/i.test(dates) ? null : (ys && ys.length ? ys[ys.length - 1] : null);
+        add(c, 'experience', 'experience', c.getAttribute('data-start-year'), ey, '.role-title', '.role-company', 'r' + i);
+      });
+      document.querySelectorAll('[data-pane="education"] .edu-card[data-persona="' + persona + '"]').forEach(function (c, i) {
+        var ys = ((c.querySelector('.date-line') || {}).textContent || '').match(/(?:19|20)\d{2}/g);
+        if (!ys || !ys.length) return;
+        add(c, 'education', 'education', ys[0], ys.length > 1 ? ys[1] : ys[0], '.title-line', '.sub-line', 'e' + i);
+      });
+      return out;
+    }
+    var TL_TRAVELERS = { audrey: 'car', feifei: 'footprints', reshma: 'bicycle', dominique: 'sailboat', dario: 'rocket', andrej: 'rocket', susan: 'bicycle', sam: 'train' };
+
+    // Build every persona's strip — Elon from her curated data, the rest derived.
+    document.querySelectorAll('.identity-card .tl-strip').forEach(function (strip) {
+      var card = strip.closest('.identity-card');
+      var persona = card ? card.getAttribute('data-persona') : '';
+      var hd;
+      if (persona === 'elon' && window.HOPE_DATA && Array.isArray(window.HOPE_DATA.timeline)) hd = window.HOPE_DATA;
+      else hd = { timeline: deriveTimeline(persona), traveler: TL_TRAVELERS[persona] || 'dot' };
+      buildTimeline(strip, hd);
+    });
   })();
 
   // ═══════════════════════════════════════════════════════════════
@@ -1214,17 +1511,17 @@
   // MODULAR SPLIT (sample-only): the registry entries now live in
   // data/<persona>.js — one classic script per persona, each registering
   // itself on window.HOPE_PERSONAS['<id>']. Field contract: the authoring
-  // comment in data/jane.js (stated once there, cited here). index.html
+  // comment in data/elon.js (stated once there, cited here). index.html
   // loads every data/*.js BEFORE this file, so the registry is complete
   // by the time this line runs. Persona CONTENT is unchanged — it stays
   // in index.html's markup, tagged data-persona.
   const PERSONAS = window.HOPE_PERSONAS || {};
 
   const state = {
-    persona: 'jane',
-    career: 9,                  // years; filters roles by data-start-year
+    persona: 'elon',
+    career: 99,                 // years; filters roles by data-start-year (99 = "All")
     roles: 5,                   // count cap
-    industries: new Set(PERSONAS.jane.industries),
+    industries: new Set(PERSONAS.elon.industries),
     skills: 100,                // count cap
     skillCats: new Set(['domain','tools','programming','methods','analytical','interpersonal','creative','languages']),
     projects: 6,
@@ -1288,7 +1585,7 @@
     else wrap.setAttribute('data-density', state.density);
 
     // Stats + section button counts (active persona only)
-    const p = PERSONAS[state.persona] || PERSONAS.jane;
+    const p = PERSONAS[state.persona] || PERSONAS.elon;
     const visibleProjects = countActivePersonaVisible('[data-pane="projects"] .item-card');
     const visibleCerts = countActivePersonaVisible('[data-pane="certifications"] .edu-card');
     const visibleEdu = countActivePersonaVisible('[data-pane="education"] .edu-card');
@@ -1306,7 +1603,7 @@
     setText('cnt-education', visibleEdu + ' ' + (visibleEdu !== 1 ? 'degrees' : 'degree'));
 
     // Readouts
-    setText('rd-career', state.career + 'y');
+    setText('rd-career', state.career >= 99 ? 'All' : state.career + 'y');
     setText('rd-roles', rolesShown + ' / ' + p.roles);
     setText('rd-skills', skillsShown + ' / ' + p.skills);
     setText('rd-projects', visibleProjects);
@@ -1392,7 +1689,7 @@
 
   // ─── Persona switcher ─────────────────────────────────────────────
   function rebuildIndustryTags(personaName) {
-    const p = PERSONAS[personaName] || PERSONAS.jane;
+    const p = PERSONAS[personaName] || PERSONAS.elon;
     const group = document.querySelector('.dc-tags[data-control="industry"]');
     if (!group) return;
     group.innerHTML = p.industries.map(ind =>
@@ -1402,26 +1699,86 @@
     bindTagGroup('industry', 'industries');
   }
 
+  // ─── Overview socials picker (sample-only) ───────────────────────
+  // Lets a visitor pick up to N socials for the overview's "Latest from".
+  // The Social app exposes the active persona's embeddable list via
+  // window.HOPE_SOCIAL.embeddableFor(persona) and re-renders that persona's
+  // "Latest from" on the 'hope:set-featured' event. Hidden when the active
+  // persona ships no embeddable socials.
+  function buildSocialPicker() {
+    const section = document.getElementById('dc-socials-section');
+    const host = document.getElementById('dc-socials');
+    const readout = document.getElementById('rd-socials');
+    const api = window.HOPE_SOCIAL;
+    // Per-persona: the picker reflects the ACTIVE persona's embeddable socials.
+    // Hidden for a persona that ships none (no embeddable "Latest from" to pick).
+    const list = api ? api.embeddableFor(state.persona) : [];
+    const hasSocials = !!(list && list.length);
+    if (section) section.style.display = hasSocials ? '' : 'none';
+    if (!hasSocials || !host) return;
+    const max = Math.min((api && api.max) || 2, list.length);
+    const selected = list.filter(s => s.pinned).map(s => s.url).slice(0, max);
+    // Top up to `max` with the first non-pinned embeds so the overview always
+    // shows 2, even when a persona's pinned set includes a non-embeddable link.
+    for (let i = 0; i < list.length && selected.length < max; i++) {
+      if (selected.indexOf(list[i].url) < 0) selected.push(list[i].url);
+    }
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    function sync() {
+      host.querySelectorAll('label').forEach(label => {
+        const cb = label.querySelector('input');
+        const on = selected.indexOf(cb.value) > -1;
+        cb.checked = on;
+        label.classList.toggle('active', on);
+        label.classList.toggle('dc-disabled', selected.length >= max && !on); // at cap → unpickable until one is freed
+      });
+      if (readout) readout.textContent = selected.length + ' / ' + max;
+    }
+    host.innerHTML = list.map(s =>
+      '<label><input type="checkbox" value="' + esc(s.url) + '">' + esc(s.label || 'Link') + '</label>'
+    ).join('');
+    host.querySelectorAll('label').forEach(label => {
+      const cb = label.querySelector('input');
+      label.addEventListener('click', (e) => {
+        e.preventDefault(); // checked state is driven by `selected`, not the native toggle
+        const url = cb.value;
+        const i = selected.indexOf(url);
+        let changed = false;
+        if (i > -1) { selected.splice(i, 1); changed = true; }
+        else if (selected.length < max) { selected.push(url); changed = true; }
+        sync();
+        if (changed) { try { document.dispatchEvent(new CustomEvent('hope:set-featured', { detail: { urls: selected.slice() } })); } catch (err) {} }
+      });
+    });
+    sync();
+    // Sync the overview to the picker's current (default) selection.
+    try { document.dispatchEvent(new CustomEvent('hope:set-featured', { detail: { urls: selected.slice() } })); } catch (err) {}
+  }
+
   function setPersona(name) {
     if (!PERSONAS[name]) return;
     state.persona = name;
-    // Toggle data-persona-hidden on every persona-tagged element
-    document.querySelectorAll('[data-persona]').forEach(el => {
+    // Toggle data-persona-hidden on every persona-tagged element — EXCEPT the
+    // persona-picker buttons, which carry data-persona to SELECT a persona (not
+    // to be gated by one). Sweeping them would hide every button but the active
+    // one via the global [data-persona-hidden]{display:none}, breaking the switcher.
+    document.querySelectorAll('[data-persona]:not(.persona-btn)').forEach(el => {
       el.setAttribute('data-persona-hidden', el.getAttribute('data-persona') === name ? 'false' : 'true');
     });
     // Active state on persona-picker buttons
     document.querySelectorAll('.persona-btn').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-persona') === name);
     });
-    // Default-open app: Overview when this persona ships the Overview pane
-    // (Jane only in this sample), else Experience. Mirrors the generated
-    // template, where the init JS promotes Overview when the {{#show_summary}}
-    // pane exists and the markup's static Experience fallback stands otherwise.
-    // The initial setPersona('jane') below runs synchronously before first
+    // Default-open app: Overview when this persona ships an Overview pane,
+    // else Experience. The data-persona-hidden sweep above already gated every
+    // pane for `name`, so the active persona's Overview pane is the only
+    // [data-pane="overview"] left un-hidden. Mirrors the generated template,
+    // where the init JS promotes Overview when the {{#show_summary}} pane
+    // exists and the markup's static Experience fallback stands otherwise.
+    // The initial setPersona('elon') below runs synchronously before first
     // paint, so there's no active-tab flash.
-    const overviewPane = document.getElementById('pane-overview');
-    const defaultSection = (overviewPane && overviewPane.getAttribute('data-persona-hidden') !== 'true')
-      ? 'overview' : 'experience';
+    const overviewPane = document.querySelector('.section-pane[data-pane="overview"]:not([data-persona-hidden="true"])');
+    const defaultSection = overviewPane ? 'overview' : 'experience';
     document.querySelectorAll('.section-btn').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-section') === defaultSection);
     });
@@ -1445,7 +1802,7 @@
     // Reset career segmented buttons (set the one matching p.career as active, or closest)
     const careerGroup = document.querySelector('.dc-segmented[data-control="career"]');
     if (careerGroup) {
-      const options = [1, 3, 5, 9, 15];
+      const options = [5, 15, 30, 99];
       const closest = options.reduce((best, v) => Math.abs(v - p.career) < Math.abs(best - p.career) ? v : best, options[0]);
       careerGroup.querySelectorAll('button').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-value'), 10) === closest));
       state.career = closest;
@@ -1471,6 +1828,17 @@
     });
     // Rebuild industry tags for the new persona
     rebuildIndustryTags(name);
+    // Render the active persona's feed + overview now (the priority pass may
+    // not have reached it yet) so switching shows content immediately.
+    if (window.HOPE_SOCIAL && window.HOPE_SOCIAL.ensure) window.HOPE_SOCIAL.ensure(name);
+    // Social app count + the overview-socials picker for the new persona
+    const nSoc = (PERSONAS[name].social || []).filter(s => !s.headline).length;
+    const cntSoc = document.getElementById('cnt-social');
+    if (cntSoc) cntSoc.textContent = nSoc + (nSoc === 1 ? ' post' : ' posts');
+    buildSocialPicker();
+    // Now that the new persona's panes are visible, load their on-screen embeds
+    // (the reveal can't rely on IntersectionObserver alone — see fillVisible).
+    if (window.HOPE_SOCIAL && window.HOPE_SOCIAL.fillVisible) setTimeout(window.HOPE_SOCIAL.fillVisible, 80);
     // Apply
     applyFilters();
   }
@@ -1490,5 +1858,5 @@
   });
 
   // Initial application — set persona first, which fires applyFilters
-  setPersona('jane');
+  setPersona('elon');
 })();

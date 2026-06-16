@@ -139,7 +139,7 @@ The Projects pane uses the **same collapsible `.item-card` structure as Experien
 | `{{skill_category}}` / `{{skill_name}}` | `.skill-chip` (in the `HOPE:project_skills_loop`) | One chip per entry in `skills_applied`; `skill_category` drives chip color via the same category map as Experience. Wrap in `{{#has_skills}}…{{/has_skills}}`. |
 | `{{link}}` / `{{link_label}}` | trailing `<a class="item linkedin">` | Optional external link (repo, live site, writeup); omit the block when the project has no link. |
 
-Mark the **first** project card `expanded` (so the pane opens populated). The card reuses Experience's `.item-card[data-expand] .item-head` markup verbatim, so the card-expand JS and the section-grid "Projects" filter work on project cards with no extra wiring. There is **no** project tile, hero gradient, or metric tag — those were removed.
+Leave **every** project card **collapsed** by default (no `expanded` class) — the same as Experience. The reader expands what they want, and a timeline-node jump auto-expands its target card. The card reuses Experience's `.item-card[data-expand] .item-head` markup verbatim, so the card-expand JS and the section-grid "Projects" filter work on project cards with no extra wiring. There is **no** project tile, hero gradient, or metric tag — those were removed.
 
 ### Promotion / tenure within one company
 
@@ -224,7 +224,7 @@ The Social Feed is an **optional app** (offered via the app catalog — see "Wha
 | `url` | the public permalink. The renderer derives the embed from it — **you never write embed HTML**. |
 | `title` | optional label for the always-present "View on …" link (defaults to "View on {platform}"). |
 | `caption` | optional one short line shown above the embed. |
-| `pinned` | optional boolean, reserved (future: surface in Overview). |
+| `pinned` | optional boolean — promotes an **embeddable** post (video / embeddable post) to the Overview's "Latest from" (max 2 embeds). Ignored on profile/link socials: those always route to the **headline contact row** as app-name pills, never the Overview. |
 
 **How it renders — two templates, you pick per the user's content (template-owned, don't reinvent):** `portfolio.js` turns each post into **one of two cards**:
 - an **embed card** — a live `<iframe>` or the platform's `<blockquote>` + async script — when the URL is a specific embeddable **post or video**;
@@ -240,7 +240,7 @@ The Social Feed is an **optional app** (offered via the app catalog — see "Wha
 
 The Overview isn't a fixed panel — it's a **curated board the user fills** to make the strongest first screen, and like everything Hope does it's a **recommendation the user re-picks** (or overrides, or forks — it's their MIT file). Beyond the stat row + interests, two opt-in strips render inside the Overview pane (both JS-built by `portfolio.js`, both **hidden until filled — zero residue**):
 
-- **"Latest from"** — up to **2 promoted socials**. Mark them with **`pinned: true`** on the social post (`window.HOPE_DATA.social`); the renderer surfaces the pinned ones (max 2) here as their real cards + a **"See all →"** to the full Social pane.
+- **"Latest from"** — up to **2 promoted EMBED socials** (a video, an embeddable post — **never** a profile/link card). Mark them with **`pinned: true`** on an *embeddable* social post (`window.HOPE_DATA.social`); the renderer surfaces the pinned **embeds** (max 2) here as live cards + a **"See all →"** to the full Social pane. **Profile/link socials (Dribbble, Behance, a personal site, a channel page…) never render here** — the renderer auto-injects them into the **headline contact row** as app-name pills, so a short link card can never stretch beside a tall embed and leave a gap.
 - **"Highlights"** — featured **work items**: a standout **project**, a key **experience**, a **degree (education)**, a **certification** — *any* timeline entry. Mark them with **`featured: true`** on the timeline entry (`window.HOPE_DATA.timeline`). Each renders as a compact card whose chip is the **org logo** (favicon from the entry's `domain`; the type icon is the fallback only when there's no domain) and which **jumps to its full entry** (activates the pane, scrolls, pulses). Kicker + accent follow the type palette (project = cyan, experience = slate, education = violet, certification = amber).
 
 **Ask what to feature — recommend a default, let them re-pick** (voice-guide rule #6 / `AskUserQuestion`). When the Overview is on:
@@ -255,7 +255,7 @@ The Overview isn't a fixed panel — it's a **curated board the user fills** to 
 
 Record the picks on the CuratedPortfolio so they're remembered and not re-asked while iterating.
 
-**Compose to fill — no gaping holes** (a design rule, not a layout hack; this is the agent being smart, guided by these instructions + the design tokens). When you pin items, **choose ones that compose well.** For "Latest from", pin **two items of similar height** — two live embeds, or two profile cards — *not* a tall video beside a short link, which leaves an empty gap. The layout fills a mismatch gracefully (cards stretch, never raw page background), but two-of-a-kind reads cleanest. Carry the instinct across the whole Overview: balance the strips, fill the space, leave no orphaned empty area. The recruiter should never land on a hole.
+**Compose to fill — no gaping holes** (a design rule, not a layout hack; this is the agent being smart, guided by these instructions + the design tokens). "Latest from" is **embeds-only** now — the renderer routes every profile/link social to the headline — so the tall-embed-beside-short-link gap can't occur by construction. The instinct still carries across the **whole** Overview: balance the strips, fill the space, leave no orphaned empty area. The recruiter should never land on a hole.
 
 ### Resume view — substitution contract
 

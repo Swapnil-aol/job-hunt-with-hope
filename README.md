@@ -28,7 +28,7 @@ Your facts live in one file on your computer: `career.json`. Hope also keeps a s
 
 1. **Install** (in [Claude Code](https://claude.com/claude-code) or the Claude desktop app):
    ```
-   /plugin marketplace add oneconsciousness/claude-job-hunt-with-hope
+   /plugin marketplace add oneconsciousness/job-hunt-with-hope
    /plugin install hope@hope
    ```
 2. **Open a fresh chat in an empty folder** and type: **start my job hunt with Hope.**

@@ -485,25 +485,55 @@
   // NOT un-match a viewport media query, so the DOM must be restored
   // explicitly there (the CSS side is gated with body:not(...) classes).
   var railsMql = window.matchMedia ? window.matchMedia('(min-width: 1440px)') : null;
-  var railSummary = document.querySelector('.identity-card .identity-info > .summary');
-  var railHome = railSummary ? railSummary.parentNode : null; // .identity-info
+  // When there's the width for a rail, the WHOLE identity (photo + the full
+  // .identity-info — name, headline, LIVE pill, stats, contact, summary) rides
+  // into the left rail, photo on top. Only the timeline (#throughline) stays in
+  // the centre card, where it picks up a "Career Timeline" header. nextSibling
+  // captures the exact in-card slot for an exact restore.
+  var railInfo = document.querySelector('.identity-card > .identity-row > .identity-info');
+  var railInfoHome = railInfo ? railInfo.parentNode : null; // .identity-row
+  var railInfoNext = railInfo ? railInfo.nextSibling : null;
+  var railPhoto = document.getElementById('photo-upload');
+  var railPhotoHome = railPhoto ? railPhoto.parentNode : null; // .identity-row
+  var railPhotoNext = railPhoto ? railPhoto.nextSibling : null; // restore exact slot
   var railAside = null;
+  function mountEyebrows() {
+    // "Career Timeline" header above the standalone strip. CSS :has() gates it to
+    // a visible strip, so empty/absent timeline data shows no orphan header.
+    var strip = document.querySelector('.identity-card > .tl-strip');
+    if (!strip) return;
+    var prev = strip.previousElementSibling;
+    if (prev && prev.classList.contains('tl-rail-eyebrow')) return;
+    var eb = document.createElement('div');
+    eb.className = 'tl-rail-eyebrow';
+    eb.setAttribute('aria-hidden', 'true');
+    eb.textContent = 'Career Timeline';
+    strip.parentNode.insertBefore(eb, strip);
+  }
+  function unmountEyebrows() {
+    var eb = document.querySelector('.tl-rail-eyebrow');
+    if (eb && eb.parentNode) eb.parentNode.removeChild(eb);
+  }
   function mountRails() {
-    if (!railSummary || !railHome) return; // no summary in this build — grid-only rails via CSS
+    if (!railInfo || !railInfoHome) return; // no identity in this build — grid-only rails via CSS
     if (!railAside) {
       railAside = document.createElement('aside');
       railAside.className = 'summary-rail';
-      railAside.setAttribute('aria-label', 'About');
+      railAside.setAttribute('aria-label', 'Profile');
     }
     if (!railAside.parentNode) {
       var wrap = document.querySelector('.wrap');
       if (wrap) wrap.appendChild(railAside);
     }
-    if (railSummary.parentNode !== railAside) railAside.appendChild(railSummary);
+    if (railPhoto && railPhoto.parentNode !== railAside) railAside.appendChild(railPhoto); // photo on top
+    if (railInfo.parentNode !== railAside) railAside.appendChild(railInfo);
+    mountEyebrows();
   }
   function unmountRails() {
-    // appendChild = the original slot: the summary is .identity-info's last child.
-    if (railSummary && railHome && railSummary.parentNode !== railHome) railHome.appendChild(railSummary);
+    // Restore each node to its exact pre-rail slot in .identity-row.
+    if (railInfo && railInfoHome && railInfo.parentNode !== railInfoHome) railInfoHome.insertBefore(railInfo, railInfoNext);
+    if (railPhoto && railPhotoHome && railPhoto.parentNode !== railPhotoHome) railPhotoHome.insertBefore(railPhoto, railPhotoNext);
+    unmountEyebrows();
     if (railAside && railAside.parentNode) railAside.parentNode.removeChild(railAside);
   }
   function syncRails() {
@@ -514,7 +544,7 @@
     if (railsMql.addEventListener) railsMql.addEventListener('change', syncRails);
     else if (railsMql.addListener) railsMql.addListener(syncRails);
   }
-  window.addEventListener('beforeprint', unmountRails); // every print mode is single-column; summary prints in-card
+  window.addEventListener('beforeprint', unmountRails); // every print mode is single-column; identity prints in-card
   window.addEventListener('afterprint', syncRails);
   const PHOTO_KEY = 'hope_headshot_data_url';
   const photoInput = document.getElementById('photo-input');
@@ -709,7 +739,7 @@
     // Featured WORK item (from the timeline) → a compact card that jumps to its
     // full entry. type drives the kicker + accent (same palette as the rail).
     var FT_LABEL = { experience: 'Experience', project: 'Project', education: 'Education', certification: 'Certification' };
-    var FT_COLOR = { experience: 'var(--accent-slate)', project: 'var(--accent-cyan)', education: 'var(--accent-violet)', certification: 'var(--accent-amber)' };
+    var FT_COLOR = { experience: 'var(--app-experience)', project: 'var(--app-projects)', education: 'var(--app-education)', certification: 'var(--app-certifications)' };
     var FT_ICON = { experience: 'work', project: 'rocket_launch', education: 'school', certification: 'verified' };
     function buildFeatureCard(e) {
       var type = String(e.type || 'experience').toLowerCase();
@@ -734,12 +764,76 @@
     // FEED — the full Social pane (every post; masonry via .social-grid CSS).
     if (grid) posts.filter(valid).forEach(function (post) { grid.appendChild(buildSocialCard(post)); });
 
-    // OVERVIEW · "Latest from" — up to 2 pinned socials, rendered as real cards.
-    if (latestEl) {
-      var pinned = posts.filter(function (p) { return valid(p) && p.pinned; }).slice(0, 2);
-      pinned.forEach(function (post) { latestEl.appendChild(buildSocialCard(post)); });
+    // A social produces a real EMBED only when its platform resolves one — an
+    // iframe src, or a script embed pointed at a single POST (not a profile).
+    // Profile / link cards have nothing to embed → they belong in the headline.
+    function isEmbeddable(p) {
+      if (!valid(p)) return false;
+      var k = String(p.platform || 'link').toLowerCase();
+      var cfg = P[k];
+      if (!cfg) return false;
+      if (cfg.cls === 'iframe') { try { return !!cfg.src(String(p.url)); } catch (e) { return false; } }
+      if (cfg.cls === 'script') { return !POST_RE[k] || POST_RE[k].test(String(p.url)); }
+      return false; // 'link' / unknown
+    }
+    function platLabel(p) {
+      var k = String(p.platform || 'link').toLowerCase();
+      return k === 'link' ? 'Website' : ((P[k] || P.link).name);
+    }
+    var embeddable = posts.filter(isEmbeddable);
+
+    // HEADLINE — every NON-embeddable social (a profile/link card) joins the
+    // identity's contact row as an app-name pill (LinkedIn, Dribbble, …) instead
+    // of a bland link card in the overview. The pills ride with the contact row
+    // into the wide-screen rail.
+    (function injectHeadlineLinks() {
+      var row = document.querySelector('.contact-row');
+      if (!row) return;
+      row.querySelectorAll('.social-headline-link').forEach(function (el) { if (el.parentNode) el.parentNode.removeChild(el); });
+      posts.filter(function (p) { return valid(p) && !isEmbeddable(p); }).forEach(function (p) {
+        var k = String(p.platform || 'link').toLowerCase();
+        var b = B[k] || B.link;
+        var glyph = b.i ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + b.i + '</svg>'
+                        : '<span class="material-symbols-rounded">link</span>';
+        var a = document.createElement('a');
+        a.className = 'item social-headline-link';
+        a.href = String(p.url); a.target = '_blank'; a.rel = 'noopener';
+        a.setAttribute('data-platform', k);
+        a.innerHTML = glyph + esc(platLabel(p));
+        row.appendChild(a);
+      });
+    })();
+
+    // OVERVIEW · "Latest from" — EMBEDS ONLY (a link card would stretch to the
+    // embed's height and leave a dead gap; those go to the headline above). Default
+    // = pinned embeds, else the first 2 embeddable.
+    var FEATURED_MAX = 2;
+    function defaultFeatured() {
+      var pinned = embeddable.filter(function (p) { return p.pinned; }).map(function (p) { return String(p.url); });
+      return (pinned.length ? pinned : embeddable.map(function (p) { return String(p.url); })).slice(0, FEATURED_MAX);
+    }
+    function renderLatest(urls) {
+      if (!latestEl) return;
+      var list = (urls && typeof urls.length === 'number') ? urls : defaultFeatured();
+      latestEl.innerHTML = '';
+      var n = 0;
+      list.slice(0, FEATURED_MAX).forEach(function (u) {
+        var post = null;
+        embeddable.forEach(function (p) { if (String(p.url) === String(u)) post = p; });
+        if (post) { latestEl.appendChild(buildSocialCard(post)); n++; }
+      });
       var lw = document.getElementById('ov-latest-wrap');
-      if (lw && pinned.length) lw.hidden = false;
+      if (lw) lw.hidden = !n;
+    }
+    if (latestEl) {
+      renderLatest();
+      document.addEventListener('hope:set-featured', function (ev) { renderLatest(ev && ev.detail && ev.detail.urls); });
+      try {
+        window.HOPE_SOCIAL_PICKER = {
+          max: Math.min(FEATURED_MAX, embeddable.length),
+          list: embeddable.map(function (p) { return { url: String(p.url), label: platLabel(p), pinned: !!p.pinned }; })
+        };
+      } catch (e) {}
     }
 
     // OVERVIEW · "Highlights" — featured work items (timeline) that jump to entry.
@@ -752,14 +846,25 @@
         hlEl.addEventListener('click', function (ev) {
           var a = ev.target.closest('[data-jump]'); if (!a) return;
           ev.preventDefault();
+          var anchor = a.getAttribute('data-jump');
           var btn = document.querySelector('.section-btn[data-section="' + a.getAttribute('data-pane') + '"]');
           if (btn) btn.click();
-          var card = document.getElementById(a.getAttribute('data-jump'));
+          var card = document.getElementById(anchor);
           if (card) {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             card.classList.add('hope-spotlight');
             setTimeout(function () { card.classList.remove('hope-spotlight'); }, 2400);
           }
+          try { document.dispatchEvent(new CustomEvent('hope:scrub', { detail: { anchor: anchor } })); } catch (e) {} // two-way: scrub the timeline
+        });
+        // Sync: light up the Highlight card the timeline playhead is on. A
+        // non-featured node keeps the last-lit card, so a "current" always shows.
+        document.addEventListener('hope:tlnode', function (ev) {
+          var anchor = ev && ev.detail && ev.detail.anchor; if (!anchor) return;
+          var match = hlEl.querySelector('[data-jump="' + anchor + '"]');
+          if (!match) return;
+          var cs = hlEl.querySelectorAll('.feature-card');
+          for (var ci = 0; ci < cs.length; ci++) cs[ci].classList.toggle('tl-live', cs[ci] === match);
         });
       }
     }
@@ -1058,6 +1163,9 @@
       playhead.style.transform = 'translate(' + playheadX(i) + 'px, ' + (-entries[i].lift).toFixed(1) + 'px)'; // transform-only motion — the traveler climbs the ridge
       traveler.classList.toggle('tl-flip', !!backward); // face backward on the loop wrap
       current = i;
+      // Sync the Overview Highlights to the playhead — the curated card whose
+      // entry the timeline is on lights up (option A: keep curation, add sync).
+      try { document.dispatchEvent(new CustomEvent('hope:tlnode', { detail: { anchor: entries[i].anchor } })); } catch (e) {}
     }
     function schedule(i, backward) {
       if (rafId) cancelAnimationFrame(rafId);
@@ -1083,6 +1191,13 @@
     }
     if (reduced) setStatic(true); else schedule(0, false); // park on the first node
     window.setInterval(tick, 1000); // the 1s cadence; tick() no-ops while paused
+    // Two-way: a Highlight card (or any UI) can scrub the playhead to its entry.
+    document.addEventListener('hope:scrub', function (ev) {
+      var anchor = ev && ev.detail && ev.detail.anchor; if (!anchor) return;
+      for (var si = 0; si < entries.length; si++) {
+        if (entries[si].anchor === anchor) { if (!reduced) schedule(si, si < current); break; }
+      }
+    });
     if (reducedMq) {
       var onReducedChange = function () { reduced = reducedMq.matches; setStatic(reduced); };
       if (reducedMq.addEventListener) reducedMq.addEventListener('change', onReducedChange);

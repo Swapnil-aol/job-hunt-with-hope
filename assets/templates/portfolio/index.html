@@ -27,7 +27,7 @@
 <!-- Provenance (disclosed, not hidden): a standards-based generator tag + a
      schema.org ProfilePage so recruiters/crawlers can read who made this and with what.
      This is the user's file under MIT — see the footer note; it's theirs to keep or remove. -->
-<meta name="generator" content="Hope — github.com/oneconsciousness/claude-job-hunt-with-hope" />
+<meta name="generator" content="Hope — github.com/oneconsciousness/job-hunt-with-hope" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -38,7 +38,7 @@
     "@type": "SoftwareApplication",
     "name": "Hope",
     "applicationCategory": "BusinessApplication",
-    "url": "https://github.com/oneconsciousness/claude-job-hunt-with-hope"
+    "url": "https://github.com/oneconsciousness/job-hunt-with-hope"
   }
 }
 </script>
@@ -141,8 +141,11 @@
              Material Symbols glyphs. The LinkedIn + site items below are
              worked examples carrying real inlined linkedin/github marks:
              render one item per link the user actually has, swap the mark per
-             the table, and drop the site example entirely when there is no
-             such link. (#resume-view never gets icons — real text and worded
+             the table, LABEL each with the APP NAME (LinkedIn, GitHub, Behance…)
+             — never a URL or handle — and drop the site example entirely when
+             there is no such link. (Non-embeddable socials in
+             window.HOPE_DATA.social auto-inject here as app-name pills too, so
+             a profile/link social never needs a hand-authored item here.) (#resume-view never gets icons — real text and worded
              anchors only, per its ATS rules.) -->
         <div class="contact-row">
           <span class="item location"><span class="material-symbols-rounded">location_on</span>{{location}}</span>
@@ -151,11 +154,11 @@
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
           <a class="item linkedin" href="{{linkedin_url}}" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>{{linkedin_handle}}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
           <a class="item" href="{{site_url}}" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>{{site_handle}}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub
             <span class="material-symbols-rounded ext">open_in_new</span>
           </a>
         </div>
@@ -327,8 +330,9 @@
        Omit a whole row (.summary-stats or .summary-interests) when its source
        list is empty — never render an eyebrow over nothing. -->
   <div class="section-pane" data-pane="overview" id="pane-overview">
-    <section class="summary-band">
+    <section class="summary-band metrics-band">
       <div class="summary-stats">
+        <span class="overview-strip-title summary-stats-title">Impact</span>
         <!-- HOPE:summary_stats_loop -->
         <div class="summary-stat hex-kpi">
           <span class="hex"><span class="material-symbols-rounded">{{stat_icon}}</span></span>
@@ -339,6 +343,8 @@
         </div>
         <!-- /HOPE:summary_stats_loop -->
       </div>
+    </section>
+    <section class="summary-band feed-band">
       <!-- Featured board (opt-in, JS-rendered). "Latest from" = up to 2 pinned
            socials (post.pinned in data.js); "Highlights" = featured work items
            (entry.featured in the timeline). Each wrap stays hidden until
@@ -369,7 +375,8 @@
     <!-- HOPE:experience_loop_start
          For each Experience (sort: is_current first, then start_date desc), render:
          - Add "is-current" class on cards where is_current==true
-         - Add "expanded" class on the FIRST card by default
+         - All entries ship COLLAPSED by default (no "expanded" class) — the reader
+           expands what they want; a timeline-node jump auto-expands its target card
          - org-logo: <img src="https://www.google.com/s2/favicons?domain={{company_domain}}&sz=128"
                          onerror="this.outerHTML='<span class=\"org-fallback\">{{first_letter}}</span>';">
          - hex KPIs: person→count(individual), groups→count(leadership), monitoring→count(c.metric != null)
@@ -378,7 +385,7 @@
            timeline `id` in data.js (its `anchor` field equals "tl-<id>"; see the
            strip comment in the identity card)
     -->
-    <div class="item-card{{is_current_class}} expanded" data-expand id="tl-{{tl_id}}">
+    <div class="item-card{{is_current_class}}" data-expand id="tl-{{tl_id}}">
       <span class="accent-bar"></span>
       <div class="item-head">
         <img class="org-logo" src="https://www.google.com/s2/favicons?domain={{company_domain}}&sz=128"
@@ -556,7 +563,8 @@
   <div class="section-pane" data-pane="projects" id="pane-projects">
     <!-- HOPE:projects_loop_start
          For each Project (sort: is_current/active first, then start_date desc), render:
-         - Add "expanded" class on the FIRST card by default (so the pane opens populated)
+         - All entries ship COLLAPSED by default (no "expanded" class) — the reader
+           expands what they want; a timeline-node jump auto-expands its target card
          - org-logo: if the project has a link/host domain, use the favicon
                <img class="org-logo" src="https://www.google.com/s2/favicons?domain={{project_domain}}&sz=128"
                     onerror="this.outerHTML='<span class=\"org-fallback\">{{project_initial}}</span>';">
@@ -573,7 +581,7 @@
            timeline `id` in data.js (its `anchor` field equals "tl-<id>"; see the
            strip comment in the identity card)
     -->
-    <div class="item-card project expanded" data-expand id="tl-{{tl_id}}">
+    <div class="item-card project" data-expand id="tl-{{tl_id}}">
       <span class="accent-bar"></span>
       <div class="item-head">
         <img class="org-logo" src="https://www.google.com/s2/favicons?domain={{project_domain}}&sz=128"
@@ -734,7 +742,7 @@
   <!-- Made with Hope, and given to you freely. If it helped you find work, please keep this
        credit so the next person finds Hope too. It's your file under MIT, so the choice is
        yours — but we hope you'll leave it. Pay it forward. -->
-  <div class="footer">Generated with <a href="https://github.com/oneconsciousness/claude-job-hunt-with-hope" target="_blank" rel="noopener">Hope</a> · {{generation_date}}{{#target_company}} · For {{target_company}}{{/target_company}}</div>
+  <div class="footer">Generated with <a href="https://github.com/oneconsciousness/job-hunt-with-hope" target="_blank" rel="noopener">Hope</a> · {{generation_date}}{{#target_company}} · For {{target_company}}{{/target_company}}</div>
 </div>
 
 <!-- EXPORT CHOOSER (modal) ========================================= -->

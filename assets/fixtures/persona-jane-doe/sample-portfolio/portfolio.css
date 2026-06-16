@@ -49,6 +49,8 @@
 
   --accent-rose:      #D43450;     /* destructive / remove */
   --accent-slate:     #4A6FA5;     /* experience — timeline/app identity (orange is chrome, never a category) */
+  /* App colour code (founder-set) — per-section tile accent; no code → --app-default (dark gray). overview + social = brand orange. */
+  --app-overview: var(--accent-orange); --app-social: var(--accent-orange); --app-experience: #2563EB; --app-skills: #9F1239; --app-education: #0D9488; --app-certifications: #C026D3; --app-projects: #6B7280; --app-default: #6B7280;
   --accent-slate-bg:  rgba(74,111,165,0.10);
   --accent-slate-edge: rgba(74,111,165,0.30);
 
@@ -360,6 +362,10 @@ img { display: block; }
   color: var(--accent-orange);
 }
 .dc-tags input { display: none; }
+/* At the featured-socials cap: unpicked chips dim to read as unavailable until
+   one is freed. */
+.dc-tags label.dc-disabled { opacity: 0.4; cursor: default; }
+.dc-tags label.dc-disabled:hover { border-color: var(--border-default); color: var(--text-secondary); }
 
 /* Reset button */
 .dc-reset {
@@ -978,7 +984,7 @@ img { display: block; }
 .photo-upload .material-symbols-rounded { font-size: 26px; margin-bottom: 2px; }
 .photo-upload.has-photo {
   border-style: solid;
-  border-color: var(--accent-emerald);
+  border-color: transparent;
   padding: 0;
   background: transparent;
 }
@@ -1102,31 +1108,33 @@ h1.name {
 .stats-row strong { color: var(--text-primary); font-weight: 700; }
 .stats-row .sep { color: var(--text-dim); margin: 0 4px; }
 
+/* Contact row — uniform pills (icon + text), one per detail. The pill + icon
+   signal a clickable detail, so the external-link arrow is dropped as clutter. */
 .contact-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 16px;
-  margin-top: 10px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--text-secondary);
+  gap: 8px;
+  margin-top: 14px;
 }
 .contact-row .item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  text-decoration: none;
+  gap: 7px;
+  padding: 5px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
   color: var(--text-secondary);
-  transition: color 0.2s, opacity 0.2s;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
-.contact-row .item.location { font-family: var(--font-sans); font-size: 12.5px; }
-.contact-row .item .material-symbols-rounded { font-size: 13px; color: var(--text-muted); }
-/* Brand marks (inline SVG, fill="currentColor") — size only: color comes from
-   the item via currentColor (.linkedin → --accent-cyan, rest → --text-secondary). */
-.contact-row .item svg { width: 13px; height: 13px; flex-shrink: 0; }
-.contact-row .item .ext { font-size: 10px; color: var(--text-dim); opacity: 0.55; }
-.contact-row .item.linkedin { color: var(--accent-cyan); }
-.contact-row .item:hover { opacity: 0.8; }
+.contact-row a.item:hover { border-color: var(--border-hover); background: var(--card-bg-hover); color: var(--text-primary); }
+.contact-row .item .material-symbols-rounded { font-size: 14px; color: var(--text-muted); }
+.contact-row .item svg { width: 13px; height: 13px; flex-shrink: 0; color: var(--text-muted); }
+.contact-row .item .ext { display: none; }
 
 .summary {
   margin: 12px 0 0;
@@ -1142,11 +1150,20 @@ h1.name {
    In a generated portfolio the Overview app (tile + pane) renders only when
    the user opted in (CuratedPortfolio.show_summary); the portfolio skill
    strips the conditionals otherwise. In this sample it's populated for
-   Jane — the default persona — only. */
+   Elon — the default persona — only. */
 .summary-band { position: relative; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); padding: 16px 24px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .summary-band::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; z-index: 0; }
 .summary-band > * { position: relative; z-index: 1; }
+/* Impact rides in its own card now. Hide a band that ends up empty — no KPIs, or
+   no visible feed strip + no interests — so a sparse portfolio never shows a
+   blank panel. :has() is progressively enhanced; unsupported browsers keep the
+   (rare) empty card rather than break. */
+.summary-band.metrics-band:not(:has(.summary-stat)) { display: none; }
+.summary-band.feed-band:not(:has(.overview-strip:not([hidden]))):not(:has(.summary-interests)) { display: none; }
 .summary-stats { display: flex; flex-wrap: wrap; gap: 14px 28px; }
+/* "Impact" heading spans the full first flex line so the KPIs wrap beneath it
+   (style inherited from .overview-strip-title — same as Latest from / Highlights). */
+.summary-stats .summary-stats-title { flex-basis: 100%; margin: 0 0 2px; }
 /* Scaled-up hex KPI: same clip-path/orange tint via the .hex-kpi classes, ~2×
    size. Scoped selectors out-rank the .hex-kpi base rules (specificity), and
    ink's monochrome .hex-kpi overrides keep covering these for free. */
@@ -1186,10 +1203,16 @@ h1.name {
    timeline leads to the slate-edged app). Fill stays BRAND orange on the
    active tile; identity lives in borders only. Orange is chrome, never a
    category. Overview and Skills aren't timeline types — they stay neutral. */
-.section-btn[data-section="experience"] { border-left: 3px solid var(--accent-slate); }
-.section-btn[data-section="projects"] { border-left: 3px solid var(--accent-cyan); }
-.section-btn[data-section="education"] { border-left: 3px solid var(--accent-violet); }
-.section-btn[data-section="certifications"] { border-left: 3px solid var(--accent-amber); }
+/* App colour code — each tile's accent (3px left border + icon); an app with no
+   code falls back to --app (dark gray). overview + social = brand orange. */
+.section-btn { --app: var(--app-default); border-left: 3px solid var(--app); }
+.section-btn[data-section="overview"] { --app: var(--app-overview); }
+.section-btn[data-section="experience"] { --app: var(--app-experience); }
+.section-btn[data-section="skills"] { --app: var(--app-skills); }
+.section-btn[data-section="education"] { --app: var(--app-education); }
+.section-btn[data-section="certifications"] { --app: var(--app-certifications); }
+.section-btn[data-section="projects"] { --app: var(--app-projects); }
+.section-btn[data-section="social"] { --app: var(--app-social); }
 .section-btn:hover {
   background: var(--card-bg-hover);
   border-color: var(--border-hover);
@@ -1203,10 +1226,11 @@ h1.name {
 .section-btn .icon {
   width: 32px; height: 32px;
   border-radius: var(--radius-button);
-  background: var(--accent-orange-bg);
+  background: var(--surface-2);
+  background: color-mix(in srgb, var(--app) 14%, transparent);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  color: var(--accent-orange);
+  color: var(--app);
   transition: all 0.2s;
 }
 .section-btn.active .icon {
@@ -1671,6 +1695,10 @@ h1.name {
 .social-embed { position: relative; width: 100%; }
 .social-embed iframe { width: 100%; border: 0; display: block; background: var(--surface-2); }
 .social-embed blockquote { margin: 0 !important; }
+.social-embed[data-embed-pending] { background: var(--surface-2); }
+.social-embed-static { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 92px; padding: 18px; text-decoration: none; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--surface-2); border-top: 1px solid var(--border-default); transition: color 0.15s, background 0.15s; }
+.social-embed-static:hover { color: var(--accent-orange); background: var(--accent-orange-bg); }
+.social-embed-static .material-symbols-rounded { font-size: 18px; }
 .social-link { display: inline-flex; align-items: center; gap: 5px; padding: 9px 13px 11px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent-cyan); text-decoration: none; transition: color 0.15s; }
 .social-link .ext { font-size: 13px; }
 .social-link:hover { color: var(--accent-orange); }
@@ -1690,19 +1718,21 @@ h1.name {
 /* ── Overview "Featured" board ─── "Latest from" (pinned socials, 2-up) +
    "Highlights" (featured work items that jump to their full entry). Both
    strips JS-rendered + hidden until filled, so the board leaves no residue. */
-.overview-featured { display: flex; flex-direction: column; gap: 18px; margin: 24px 0 2px; }
+.overview-featured { display: flex; flex-direction: column; gap: 18px; margin: 0 0 2px; }
 .overview-strip[hidden] { display: none; }
 .overview-strip-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 9px; }
 .overview-strip-title { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent-orange); }
 .overview-seeall { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
 .overview-seeall .material-symbols-rounded { font-size: 13px; }
 .overview-seeall:hover { color: var(--accent-orange); }
-.overview-latest { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: stretch; }
+.overview-latest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
 .overview-latest .social-card { display: flex; flex-direction: column; }
 .overview-latest .social-cls-profile .social-profile { flex: 1; }
 .overview-highlights { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-.feature-card { display: flex; align-items: center; gap: 11px; padding: 12px 13px; background: var(--card-bg); border: 1px solid var(--border-default); border-left: 3px solid var(--accent); border-radius: var(--radius-card); text-decoration: none; transition: border-color 0.15s, background 0.15s, transform 0.15s; }
+.feature-card { display: flex; align-items: center; gap: 11px; padding: 12px 13px; background: var(--card-bg); border: 1px solid var(--border-default); border-left: 3px solid var(--accent); border-radius: var(--radius-card); text-decoration: none; transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.25s; }
 .feature-card:hover { background: var(--card-bg-hover); transform: translateY(-1px); }
+/* tl-live — the card the timeline playhead is currently on (synced glow). */
+.feature-card.tl-live { border-color: var(--accent); background: var(--card-bg-active); box-shadow: 0 0 0 1px var(--accent), 0 4px 14px rgba(0,0,0,0.06); }
 .feature-chip { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--surface-2); border: 1px solid var(--border-default); overflow: hidden; }
 .feature-chip img { width: 22px; height: 22px; object-fit: contain; }
 .feature-chip .material-symbols-rounded { font-size: 19px; color: var(--accent); }
@@ -1948,6 +1978,7 @@ h1.name {
   .summary-band { padding: 14px 18px 16px; }
   .summary-stats { gap: 12px 20px; }
   .section-grid { grid-template-columns: 1fr; }
+  .overview-latest { grid-template-columns: 1fr; } /* one column on a phone — 2-up embeds would be too narrow */
   /* Collapsed/expanded tiles on a phone: give the role its own full-width row,
      then drop the summary cluster (contributions count + breakdown hexes +
      chevron) onto a clean right-aligned second row — so the contributions tag
@@ -2047,9 +2078,9 @@ body.print-continuous .summary-stats { gap: 14px 28px; }
 body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
 
 /* ─── THE THROUGHLINE — chronological strip in the identity card ────────
-   Shell markup: #throughline (index.html, bottom of Jane's .identity-card —
-   Jane-only in this sample; the template puts one strip in its single card);
-   data: window.HOPE_DATA.timeline (sample split: data/jane.js; authoring
+   Shell markup: #throughline (index.html, bottom of Elon's .identity-card —
+   Elon-only in this sample; the template puts one strip in its single card);
+   data: window.HOPE_DATA.timeline (sample split: data/elon.js; authoring
    contract: assets/templates/portfolio/data.js); behavior: portfolio.js.
    tl-* namespace, tokens only. The card's 32×32 grid texture already covers
    this area — the strip adds NO texture of its own. Motion is
@@ -2059,8 +2090,9 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
    Published mode: fully kept — it's a feature, not an editing affordance
    (see the published-mode contract above). Resume print modes exclude it for
    free: the whole .identity-card is display:none there. */
-#throughline { position: relative; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
-#throughline[hidden] { display: none; }
+.tl-strip { position: relative; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+.tl-strip[hidden] { display: none; }
+.about-rail:empty { display: none; } /* narrow: About stays in the identity card, this wrapper collapses */
 .tl-rail { position: relative; height: 14px; margin: 34px 10px 26px; }
 .tl-track { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: var(--radius-pill); background: var(--border-default); }
 .tl-tick { position: absolute; top: calc(50% + 4px); width: 1px; height: 5px; background: var(--border-default); }
@@ -2107,8 +2139,8 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
    file) are monochrome single-path marks per the brand-icon law
    (design-tokens.md §6), ~16px, riding the same spot; .tl-flip mirrors them
    while the loop wraps backward. Playhead z-index 1 < node z-index 2: the
-   traveler passes under the hexes. Jane rides the "paper-plane" slug —
-   a deliberate non-default pick (set in data/jane.js). */
+   traveler passes under the hexes. Elon rides the "rocket" slug —
+   a deliberate non-default pick (set in data/elon.js). */
 .tl-playhead { position: absolute; left: 0; top: 50%; z-index: 1; pointer-events: none; transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1); will-change: transform; }
 .tl-traveler { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; }
 .tl-traveler.tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-orange); box-shadow: var(--accent-orange-glow); }
@@ -2165,7 +2197,7 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
 .tl-static .tl-playhead { display: none; }
 .tl-static .tl-node:hover .tl-node-label, .tl-static .tl-node:focus-visible .tl-node-label { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  #throughline *, #throughline *::before { transition: none !important; animation: none !important; }
+  .tl-strip *, .tl-strip *::before { transition: none !important; animation: none !important; }
 }
 
 /* ─── THE THROUGHLINE — print (T8) ──────────────────────────────────────
@@ -2264,8 +2296,38 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
      purpose: no card chrome — a thin orange ledge over a mono ABOUT
      eyebrow, then the same summary text. */
   body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .summary-rail { grid-column: 1; grid-row: 2 / span 24; align-self: start; }
-  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail::before { content: "About"; display: block; width: max-content; border-top: 2px solid var(--accent-orange); padding-top: 7px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); }
-  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .summary { margin: 10px 0 0; max-width: none; font-size: 13px; }
+  /* Photo rides at the TOP of the rail: full rail width, forced square (img covers). */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .photo-upload { width: 100%; height: auto; aspect-ratio: 1 / 1; margin: 0 0 16px; }
+  /* "About" eyebrow lives ON the summary now (not the aside) so the photo sits ABOVE the header. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .summary::before { content: "About"; display: block; width: max-content; border-top: 2px solid var(--accent-orange); padding-top: 7px; margin-bottom: 10px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .summary { margin: 26px 0 0; max-width: none; font-size: 13px; }
+  /* The full identity now rides into the rail. Give the moved .identity-info room
+     to breathe under the square photo, and let the LIVE pill sit beside the name. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .identity-info { flex: none; }
+  /* PREMIUM STATS — drop the code-y "//" strip for a 2x2 metric grid that echoes
+     the overview KPIs (.summary-stat): big Inter numeral over a mono micro-label. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 14px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border-subtle); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .stats-row .sep { display: none; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .stats-row > span { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .stats-row > span strong { font-family: var(--font-sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); }
+  /* PREMIUM CONTACT — hairline-divided list (not boxy full-width pills), with the
+     icons in accent for a branded, editorial feel. Long links wrap in place. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .contact-row { flex-direction: column; align-items: stretch; gap: 0; margin-top: 20px; border-top: 1px solid var(--border-subtle); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .contact-row .item { width: 100%; justify-content: flex-start; align-items: center; gap: 11px; padding: 11px 2px; border: none; border-bottom: 1px solid var(--border-subtle); border-radius: 0; background: transparent; color: var(--text-secondary); font-size: 12px; word-break: break-word; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .contact-row a.item:hover { background: transparent; color: var(--text-primary); border-color: var(--border-subtle); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .contact-row .item .material-symbols-rounded { font-size: 16px; color: var(--accent-orange); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .summary-rail .contact-row .item svg { width: 15px; height: 15px; color: var(--accent-orange); }
+  /* Centre card keeps ONLY the timeline — the emptied .identity-row collapses out. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .identity-card > .identity-row { display: none; }
+  /* "Career Timeline" header above the standalone strip. Follows the SAME
+     convention as the centre-column section titles (.overview-strip-title —
+     "Latest from" / "Highlights"): mono, orange, no ledge. :has() gates it to a
+     visible strip, so empty/absent timeline data shows no orphan header (and the
+     rule degrades to hidden where :has is unsupported). The strip's own divider
+     is redundant under the header, so drop its border in this view. */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .tl-rail-eyebrow { display: none; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .identity-card:has(> .tl-strip:not([hidden])) .tl-rail-eyebrow { display: block; margin: 0 0 9px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent-orange); }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .identity-card:has(> .tl-strip:not([hidden])) > .tl-strip { border-top: none; margin-top: 4px; }
   /* RIGHT rail — the section-grid itself (never moved, never duplicated):
      tiles stack single-column, same anatomy and behavior, and the rail
      rides sticky so app navigation stays in reach while the center column
@@ -2273,7 +2335,13 @@ body.print-continuous .item-meta { flex-wrap: nowrap; gap: 10px; }
      item fills its whole area and leaves sticky no room to travel. top
      offset matches the .layout top padding (and the demo panel's own
      sticky offset). */
-  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .section-grid { grid-column: 3; grid-row: 2 / span 24; align-self: start; position: sticky; top: 24px; grid-template-columns: 1fr; margin-bottom: 0; }
+  /* RIGHT rail wraps the About card (top) + the app selector (sticky tiles). */
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .wrap > .app-rail { grid-column: 3; grid-row: 2 / span 24; align-self: start; display: block; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .app-rail > .section-grid { position: sticky; top: 24px; grid-template-columns: 1fr; margin-bottom: 0; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .app-rail > .about-rail { margin: 0 0 14px; background: var(--card-bg); border: 1px solid var(--border-default); border-radius: var(--radius-panel); padding: 16px 18px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .about-rail:empty { display: none; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .about-rail .summary { margin: 0; max-width: none; font-size: 13px; }
+  body:not(.print-continuous):not(.print-doc-resume):not(.print-doc-portfolio) .about-rail .summary::before { content: "About"; display: block; width: max-content; border-top: 2px solid var(--accent-orange); padding-top: 7px; margin-bottom: 10px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); }
 }
 
 /* THE THROUGHLINE on the continuous canvas — mirror of the print block above
@@ -2292,3 +2360,7 @@ body.print-continuous .tl-node.tl-clamp-end .tl-node-label { text-align: right; 
 body.print-continuous .tl-node.tl-far .tl-node-label { bottom: calc(100% + 70px); }
 body.print-continuous .tl-node.tl-below .tl-node-label { bottom: auto; top: calc(100% + 18px); }
 body.print-continuous .tl-node.tl-below.tl-far .tl-node-label { top: calc(100% + 78px); }
+
+/* Persona photos (sample) — real public-figure portraits, CC-licensed (credits in footer). */
+.persona-btn .p-avatar { overflow: hidden; }
+.persona-btn .p-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
