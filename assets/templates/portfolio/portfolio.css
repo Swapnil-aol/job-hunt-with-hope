@@ -633,6 +633,21 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
 .social-embed { position: relative; width: 100%; }
 .social-embed iframe { width: 100%; border: 0; display: block; background: var(--surface-2); }
 .social-embed blockquote { margin: 0 !important; }
+/* ─── Loading states ───────────────────────────────────────────────── */
+/* Embeds: a 2×2 grid of pulsing squares. The loader is an absolute OVERLAY
+   (z-index 2) sitting ON TOP of the embed while it loads, removed in JS only
+   once the iframe/widget paints (else a static "View on …" fallback card). */
+.social-embed[data-embed-pending] { min-height: 120px; background: var(--surface-2); }
+.embed-loader { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-columns: repeat(2, 13px); grid-template-rows: repeat(2, 13px); gap: 5px; place-content: center; background: var(--surface-2); }
+.embed-loader span { background: var(--accent-orange); border-radius: 3px; animation: embed-sq 1.1s ease-in-out infinite; }
+.embed-loader span:nth-child(1) { animation-delay: 0s; }
+.embed-loader span:nth-child(2) { animation-delay: 0.14s; }
+.embed-loader span:nth-child(4) { animation-delay: 0.28s; }
+.embed-loader span:nth-child(3) { animation-delay: 0.42s; }
+@keyframes embed-sq { 0%, 100% { opacity: 0.25; transform: scale(0.6); } 40% { opacity: 1; transform: scale(1); } }
+.social-embed-static { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 92px; padding: 18px; text-decoration: none; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--surface-2); border-top: 1px solid var(--border-default); transition: color 0.15s, background 0.15s; }
+.social-embed-static:hover { color: var(--accent-orange); background: var(--accent-orange-bg); }
+.social-embed-static .material-symbols-rounded { font-size: 18px; }
 .social-link { display: inline-flex; align-items: center; gap: 5px; padding: 9px 13px 11px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent-cyan); text-decoration: none; transition: color 0.15s; }
 .social-link .ext { font-size: 13px; }
 .social-link:hover { color: var(--accent-orange); }

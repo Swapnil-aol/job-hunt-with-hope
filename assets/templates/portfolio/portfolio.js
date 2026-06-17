@@ -701,31 +701,94 @@
     }
 
     var needsProcess = {};
+    // Live third-party embeds only load over http(s); on file:// the platforms
+    // refuse the frame, so there a static "View on …" card links out instead.
+    var EMBEDS_OK = (location.protocol === 'http:' || location.protocol === 'https:');
+    function processEmbeds() {
+      Object.keys(needsProcess).forEach(function (k) {
+        var cfg = needsProcess[k];
+        if (window[cfg.global]) { try { cfg.process(); } catch (e) {} }
+      });
+    }
+    function reprocessEmbeds() {
+      try { if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(); } catch (e) {}
+      try { if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process(); } catch (e) {}
+    }
+    // Lazy embed: register the holder; the staggered loader (fillVisible) loads
+    // each pending holder one at a time when its pane is shown — firing every
+    // embed at once stampedes the connection pool and strands some.
+    function lazyEmbed(holder, fill) { holder.__loadEmbed = function () { holder.__loadEmbed = null; fill(); }; }
+    var STAGGER_MS = 300, stagT = 0;
+    function loadStaggered(holders, i) {
+      if (i >= holders.length) { reprocessEmbeds(); stagT = 0; return; }
+      var h = holders[i];
+      if (h && h.__loadEmbed) h.__loadEmbed();
+      stagT = setTimeout(function () { loadStaggered(holders, i + 1); }, STAGGER_MS);
+    }
+    function fillVisible() {
+      var pend = [];
+      document.querySelectorAll('.social-embed[data-embed-pending]').forEach(function (h) {
+        if (h.offsetParent !== null && h.__loadEmbed) pend.push(h);
+      });
+      pend.sort(function (a, b) { return a.getBoundingClientRect().top - b.getBoundingClientRect().top; });
+      if (stagT) { clearTimeout(stagT); stagT = 0; }
+      loadStaggered(pend, 0);
+    }
+    var fvT = 0;
+    function fillVisibleSoon() { if (fvT) return; fvT = setTimeout(function () { fvT = 0; fillVisible(); }, 80); }
+
     function buildSocialCard(post) {
       var key = String(post.platform || 'link').toLowerCase();
       var cfg = P[key] || P.link;
       var url = String(post.url);
       var name = cfg.name;
-      // Resolve an embed if the URL is embeddable; otherwise it's a profile card.
-      var embed = '';
+      // Resolve the embed MARKUP (not yet injected) when the URL is embeddable.
+      var embedHTML = null, embedScript = null, embedH = cfg.h || 240;
       if (cfg.cls === 'iframe') {
         var src = null; try { src = cfg.src(url); } catch (e) { src = null; }
-        if (src) embed = '<div class="social-embed"><iframe src="' + esc(src) + '" height="' + (cfg.h || 240)
-          + '" loading="lazy" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen title="' + esc(name) + ' embed"></iframe></div>';
+        if (src) embedHTML = '<iframe src="' + esc(src) + '" height="' + embedH
+          + '" loading="lazy" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen title="' + esc(name) + ' embed"></iframe>';
       } else if (cfg.cls === 'script' && (!POST_RE[key] || POST_RE[key].test(url))) {
-        try { embed = '<div class="social-embed">' + cfg.block(url) + '</div>'; } catch (e) { embed = ''; }
-        loadScript(cfg.script);
-        if (cfg.process) needsProcess[key] = cfg;
+        try { embedHTML = cfg.block(url); } catch (e) { embedHTML = null; }
+        if (embedHTML) embedScript = cfg.script;
       }
       var card = document.createElement('article');
       var meta = '<span class="social-meta"><span class="social-plat">' + esc(name) + '</span>'
         + (post.caption ? '<span class="social-cap">' + esc(post.caption) + '</span>' : '');
-      if (embed) {
-        // EMBED CARD — branded header + the live embed + a quiet view link.
+      var head = '<div class="social-head">' + chip(key, name) + meta + '</span></div>';
+      var viewLink = '<a class="social-link" href="' + esc(url) + '" target="_blank" rel="noopener">'
+        + esc(post.title || ('View on ' + name)) + '<span class="material-symbols-rounded ext">open_in_new</span></a>';
+      if (embedHTML != null && EMBEDS_OK) {
+        // EMBED CARD — header + a placeholder whose loader stays overlaid until
+        // the live embed actually paints (a blocked/dead embed falls back to a
+        // link, never a blank frame) + a quiet view link.
         card.className = 'social-card social-' + key + ' social-cls-embed';
-        card.innerHTML = '<div class="social-head">' + chip(key, name) + meta + '</span></div>' + embed
-          + '<a class="social-link" href="' + esc(url) + '" target="_blank" rel="noopener">'
-          + esc(post.title || ('View on ' + name)) + '<span class="material-symbols-rounded ext">open_in_new</span></a>';
+        card.innerHTML = head + '<div class="social-embed" data-embed-pending style="min-height:' + embedH + 'px"><div class="embed-loader" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div>' + viewLink;
+        var holder = card.querySelector('.social-embed');
+        lazyEmbed(holder, function () {
+          var loader = holder.querySelector('.embed-loader');
+          holder.insertAdjacentHTML('afterbegin', embedHTML);
+          if (embedScript) { loadScript(embedScript); if (cfg.process) { needsProcess[key] = cfg; setTimeout(processEmbeds, 120); setTimeout(processEmbeds, 1500); } }
+          var settled = false, mo = null, poll = null;
+          function finish(ok) {
+            if (settled) return; settled = true;
+            if (mo) mo.disconnect(); if (poll) clearInterval(poll);
+            holder.removeAttribute('data-embed-pending');
+            if (ok) { if (loader && loader.parentNode) loader.parentNode.removeChild(loader); }
+            else { holder.innerHTML = '<a class="social-embed-static" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="material-symbols-rounded">open_in_new</span>View on ' + esc(name) + '</a>'; }
+          }
+          function check() { var f = holder.querySelector('iframe'); if (f && f.clientHeight > 40) finish(true); }
+          function onload() { setTimeout(check, 250); }
+          var fr0 = holder.querySelector('iframe'); if (fr0) fr0.addEventListener('load', onload);
+          mo = new MutationObserver(function () { var f = holder.querySelector('iframe'); if (f) { f.addEventListener('load', onload); check(); } });
+          mo.observe(holder, { childList: true, subtree: true });
+          poll = setInterval(check, 500);
+          setTimeout(function () { finish(false); }, 6000);
+        });
+      } else if (embedHTML != null) {
+        // file:// — a static card that links out (never a blank frame).
+        card.className = 'social-card social-' + key + ' social-cls-embed social-cls-static';
+        card.innerHTML = head + '<a class="social-embed-static" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="material-symbols-rounded">open_in_new</span>View on ' + esc(name) + '</a>';
       } else {
         // PROFILE CARD — the whole card is a designed, brand-coloured link tile.
         card.className = 'social-card social-' + key + ' social-cls-profile';
@@ -869,14 +932,13 @@
       }
     }
 
-    // Script-class platforms that need an explicit processor once their script
-    // lands and the blockquotes are in the DOM (Instagram). Twitter/TikTok
-    // widgets auto-observe new nodes, so they need no nudge.
-    Object.keys(needsProcess).forEach(function (k) {
-      var cfg = needsProcess[k];
-      var t = setInterval(function () { if (window[cfg.global]) { try { cfg.process(); } catch (e) {} clearInterval(t); } }, 400);
-      setTimeout(function () { clearInterval(t); }, 8000);
-    });
+    // Kick the staggered load: the visible pane's embeds load top-to-bottom in
+    // one pass; switching section tiles reveals + loads the next pane's embeds.
+    // Embeds are lazy (only the on-screen pane fetches), and each loader stays
+    // until its embed paints — see buildSocialCard.
+    document.querySelectorAll('.section-btn').forEach(function (b) { b.addEventListener('click', fillVisibleSoon); });
+    window.addEventListener('resize', fillVisibleSoon);
+    fillVisibleSoon();
   })();
 
   // Data: window.HOPE_DATA (data.js — the single authoring source; loaded
