@@ -459,10 +459,10 @@ h1.name { margin: 0 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0
    (rare) empty card rather than break. */
 .summary-band.metrics-band:not(:has(.summary-stat)) { display: none; }
 .summary-band.feed-band:not(:has(.overview-strip:not([hidden]))):not(:has(.summary-interests)) { display: none; }
-.summary-stats { display: flex; flex-wrap: wrap; gap: 14px 28px; }
+.summary-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 28px; align-items: start; }
 /* "Impact" heading spans the full first flex line so the KPIs wrap beneath it
    (style inherited from .overview-strip-title — same as Latest from / Highlights). */
-.summary-stats .summary-stats-title { flex-basis: 100%; margin: 0 0 2px; }
+.summary-stats .summary-stats-title { grid-column: 1 / -1; margin: 0 0 2px; }
 /* Scaled-up hex KPI: same clip-path/orange tint via the .hex-kpi classes, ~2×
    size. Scoped selectors out-rank the later .hex-kpi base rules (specificity),
    and ink's monochrome .hex-kpi overrides keep covering these for free. */

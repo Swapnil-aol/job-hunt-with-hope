@@ -4,7 +4,7 @@ description: Use when a user is starting their job hunt with Hope for the first 
 user-invocable: true
 ---
 
-<!-- hope-skill-version: 1.1.3 -->
+<!-- hope-skill-version: 1.1.4 -->
 
 # Hope Onboarding · Milestone 1
 
