@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>
+:root{--bg:#FFFFFF;--ink:#15202E;--ink2:#475569;--ink3:#94A3B8;--navy:#16263D;--navy2:#22344F;--line:#E4E8ED;--line2:#EEF1F4;--gold:#B0894F;--gold2:#8A6A3A;--blue:#1E4E8C;--soft:#F6F8FA;--serif:"Source Serif 4",Georgia,serif;--sans:"Libre Franklin",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--soft);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.6}
+.ex{max-width:1040px;margin:0 auto;background:var(--bg);box-shadow:0 1px 40px -16px rgba(21,32,46,.25)}
+.band{background:var(--navy);color:#fff;padding:42px 48px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.name{font-family:var(--serif);font-size:48px;font-weight:600;letter-spacing:-.01em;line-height:1;margin:12px 0 0;color:#fff}
+.headline{font-size:16px;color:#C5D2E0;margin:12px 0 0;max-width:560px;line-height:1.45}
+.contact{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:20px;font-size:12px;color:#9FB2C7}
+.contact .g{color:var(--gold);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:10px;margin-right:6px}
+.contact a{color:#C5D2E0;text-decoration:none}
+.photo{width:128px;height:128px;border-radius:50%;object-fit:cover;border:3px solid var(--gold)}
+.body{display:grid;grid-template-columns:1fr 320px}
+.main{padding:40px 40px 48px;border-right:1px solid var(--line)}
+.side{padding:40px 32px 48px;background:var(--soft)}
+.lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink);margin:0 0 8px}
+.lede b{color:var(--gold2);font-weight:600}
+.sh{display:flex;align-items:center;gap:12px;margin:40px 0 18px}
+.sh h2{font-family:var(--serif);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin:0;color:var(--navy)}
+.sh .ln{flex:1;height:2px;background:var(--navy);opacity:.12}
+.sh.first{margin-top:8px}
+.role{padding:0 0 26px;margin-bottom:26px;border-bottom:1px solid var(--line2);position:relative}
+.role:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.rh{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.rt{font-family:var(--serif);font-size:20px;font-weight:600;line-height:1.1}
+.rco{color:var(--gold2);font-weight:600}
+.rd{font-size:11.5px;color:var(--ink3);white-space:nowrap;font-weight:500}
+.live{display:inline-block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--gold);border-radius:3px;padding:2px 8px;margin-left:8px;vertical-align:middle;font-weight:600}
+.contribs{display:flex;flex-direction:column;gap:16px;margin-top:14px}
+.contrib{border-left:3px solid var(--line);padding-left:16px}
+.contrib.hasm{border-left-color:var(--gold)}
+.cmrow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cmetric{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--gold2);line-height:1}
+.cdomain{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.cimpact{font-size:14px;font-weight:500;line-height:1.5;margin-top:6px}
+.caction{font-size:13px;color:var(--ink2);line-height:1.6;margin-top:6px}
+.cs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{font-size:10.5px;color:var(--blue);background:rgba(30,78,140,.07);border-radius:4px;padding:2px 9px;font-weight:500;white-space:nowrap}
+.tl{margin-top:4px}
+.tlrow{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line2)}
+.tlrow:last-child{border-bottom:0}
+.tldate{font-size:11px;color:var(--ink3);font-weight:500}
+.tllabel{font-family:var(--serif);font-size:15px;font-weight:600}
+.tldot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:9px;vertical-align:middle}
+.tldot.edu{background:var(--navy);opacity:.45}
+.tlorg{color:var(--ink2);font-weight:400;font-family:var(--sans);font-size:12.5px}
+.tlmetric{font-size:11px;color:var(--ink3);margin-top:2px}
+.sideh{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy);font-weight:700;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--gold)}
+.sideblk{margin-bottom:32px}.sideblk:last-child{margin-bottom:0}
+.kpi{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.kpi:last-child{border-bottom:0}
+.kpi .v{font-family:var(--serif);font-size:21px;font-weight:700;color:var(--navy);white-space:nowrap;min-width:78px}
+.kpi .k{font-size:11px;color:var(--ink2);line-height:1.35}
+.skcat{margin-bottom:16px}
+.skcat h4{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px;font-weight:600}
+.sk{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding:3px 0}
+.sk .nm{font-size:12.5px}
+.dots{display:flex;gap:3px}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dt.on{background:var(--navy)}
+.edu{padding:10px 0;border-bottom:1px solid var(--line)}.edu:last-child{border-bottom:0}
+.edu .d{font-family:var(--serif);font-size:14px;font-weight:600;line-height:1.25}
+.edu .i{color:var(--ink2);font-size:12px}
+.edu .y{font-size:10.5px;color:var(--ink3);margin-top:2px}
+.interests{font-size:12.5px;color:var(--ink2);line-height:1.7}
+.foot{background:var(--navy);color:#9FB2C7;text-align:center;padding:16px;font-size:11px;letter-spacing:.04em}
+.foot b{color:var(--gold);font-weight:600}
+@media(max-width:860px){.band{grid-template-columns:1fr;padding:30px 24px}.photo{width:96px;height:96px}.name{font-size:36px}.body{grid-template-columns:1fr}.main{border-right:0;padding:30px 22px}.side{padding:30px 22px}}
+</style>
+</helmet>
+<div class="ex">
+<div class="band"><div><div class="eyebrow">Executive Portfolio · {{ genDate }}</div><h1 class="name">{{ name }}</h1><div class="headline">{{ headline }}</div><div class="contact"><span><span class="g">Loc</span>{{ location }}</span><span><span class="g">Email</span>{{ email }}</span><span><span class="g">Tel</span>{{ phone }}</span><span><span class="g">Web</span><a href="{{ linkedinUrl }}">{{ linkedinLabel }}</a></span></div></div><img class="photo" src="{{ photo }}" alt="{{ name }}"></div>
+<div class="body">
+<div class="main"><p class="lede">{{ summary }}</p>
+<div class="sh first"><h2>Professional Experience</h2><span class="ln"></span></div><sc-for list="{{ roles }}" as="r" hint-placeholder-count="3"><div class="role"><div class="rh"><div class="rt">{{ r.role_title }}<span class="rco"> · {{ r.company }}</span><sc-if value="{{ r.is_current }}" hint-placeholder-val="{{ false }}"><span class="live">Current</span></sc-if></div><div class="rd">{{ r.dates }}</div></div><div class="contribs"><sc-for list="{{ r.items }}" as="c" hint-placeholder-count="2"><div class="{{ c.cls }}"><div class="cmrow"><sc-if value="{{ c.metric }}" hint-placeholder-val="x"><span class="cmetric">{{ c.metric }}</span></sc-if><span class="cdomain">{{ c.domain }}</span></div><div class="cimpact">{{ c.impact }}</div><div class="caction">{{ c.action }}</div><div class="cs"><sc-for list="{{ c.skills }}" as="sk" hint-placeholder-count="3"><span class="chip">{{ sk }}</span></sc-for></div></div></sc-for></div></div></sc-for>
+<div class="sh"><h2>Career Timeline</h2><span class="ln"></span></div><div class="tl"><sc-for list="{{ timeline }}" as="t" hint-placeholder-count="6"><div class="tlrow"><div class="tldate">{{ t.period }}</div><div><div class="tllabel"><span class="{{ t.dotCls }}"></span>{{ t.label }} <span class="tlorg">— {{ t.org }}</span></div><sc-if value="{{ t.metric }}" hint-placeholder-val="x"><div class="tlmetric">{{ t.metric }}</div></sc-if></div></div></sc-for></div></div>
+<div class="side"><div class="sideblk"><h3 class="sideh">Impact at a Glance</h3><sc-for list="{{ stats }}" as="s" hint-placeholder-count="4"><div class="kpi"><span class="v">{{ s.value }}</span><span class="k">{{ s.label }}</span></div></sc-for></div><div class="sideblk"><h3 class="sideh">Core Skills</h3><sc-for list="{{ skillGroups }}" as="g" hint-placeholder-count="3"><div class="skcat"><h4>{{ g.name }}</h4><sc-for list="{{ g.items }}" as="sk" hint-placeholder-count="3"><div class="sk"><span class="nm">{{ sk.name }}</span><div class="dots"><sc-for list="{{ sk.dots }}" as="d" hint-placeholder-count="4"><span class="{{ d.cls }}"></span></sc-for></div></div></sc-for></div></sc-for></div><div class="sideblk"><h3 class="sideh">Education</h3><sc-for list="{{ education }}" as="e" hint-placeholder-count="2"><div class="edu"><div class="d">{{ e.degree_line }}</div><div class="i">{{ e.institution }}</div><div class="y">{{ e.dates }}</div></div></sc-for></div><div class="sideblk"><h3 class="sideh">Certifications</h3><sc-for list="{{ certs }}" as="c" hint-placeholder-count="3"><div class="edu"><div class="d" style="font-size:13px">{{ c.name }}</div><div class="i">{{ c.issuer }}</div></div></sc-for></div><div class="sideblk"><h3 class="sideh">Interests</h3><div class="interests">{{ interests }}</div></div></div>
+</div>
+<div class="foot"><b>{{ name }}</b> — {{ headline }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount(){ if(window.HOPE_DATA && !this._d){ this._d=true; this.forceUpdate(); } this._revealSoon(); }
+  componentDidUpdate(){ this._revealSoon(); }
+  _revealSoon(){ if(this._revealed) return; const rows=document.querySelectorAll('.tlrow');
+    if(!rows.length){ setTimeout(()=>this._revealSoon(),80); return; }
+    this._revealed=true; const anims=[];
+    rows.forEach((el,i)=>{ try{ anims.push(el.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:460,delay:i*65,easing:'cubic-bezier(.2,.6,.2,1)',fill:'backwards'})); }catch(e){} });
+    setTimeout(()=>{ anims.forEach(a=>{ try{ if(a.playState!=='finished') a.cancel(); }catch(e){} }); }, 1100);
+  }
+  dots(level){ const a=[]; for(let i=1;i<=4;i++) a.push({cls:i<=level?'dt on':'dt'}); return a; }
+  fy(x){ return x?x.split('-')[0]:''; }
+  fmtPeriod(s,e){ const a=this.fy(s), b=e?this.fy(e):'Now'; return a===b?a:a+'–'+b; }
+  renderVals(){
+    const D=window.HOPE_DATA;
+    if(!D) return { name:'', stats:[], timeline:[], roles:[], skillGroups:[], education:[], certs:[] };
+    const id=D.identity||{}, meta=D.meta||{}, link=(id.links&&id.links[0])||{};
+    const roles=(D.experience||[]).map(r=>{
+      const items=[];
+      (r.groups||[]).forEach(g=>(g.contributions||[]).forEach(c=>{
+        const metric=c.metric?c.metric.value:'';
+        items.push({ cls: metric?'contrib hasm':'contrib', domain:c.domain||c.scope||'', metric:metric, impact:c.impact||'', action:c.action||'', skills:(c.skills||[]).map(s=>s.name) });
+      }));
+      return { role_title:r.role_title, company:r.company, dates:r.dates, is_current:!!r.is_current, items };
+    });
+    const skillGroups=(D.skills&&D.skills.order||[]).map(name=>{
+      const cat=D.skills.categories[name]||{items:[]};
+      return { name, items:(cat.items||[]).map(it=>({ name:it.name, dots:this.dots(it.level) })) };
+    });
+    const timeline=(D.timeline||[]).map(t=>({ period:this.fmtPeriod(t.date_start,t.date_end), label:t.label.split(' @ ')[0], org:t.org, metric:t.metric||'', dotCls:(t.type==='education'||t.type==='certification')?'tldot edu':'tldot' }));
+    return {
+      name:meta.name||id.name, headline:meta.headline||'', location:id.location||'', email:id.email||'', phone:id.phone||'',
+      linkedinUrl:link.url||'#', linkedinLabel:link.label||'LinkedIn', genDate:meta.generation_date||'', photo:id.photo||'',
+      summary:id.summary||'',
+      stats:(D.overview&&D.overview.headline_stats||[]).map(s=>({value:s.value,label:s.label})),
+      timeline, roles, skillGroups,
+      education:(D.education||[]).map(e=>({degree_line:e.degree_line,institution:e.institution,dates:e.dates})),
+      certs:(D.certifications||[]).map(c=>({name:c.name,issuer:c.issuer})),
+      interests:(D.overview&&D.overview.interests||[]).join(' · ')
+    };
+  }
+}
+</script>
+</body>
+</html>
