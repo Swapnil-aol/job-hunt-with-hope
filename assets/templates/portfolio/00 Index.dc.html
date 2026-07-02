@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Libre+Franklin:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0E1116;--panel:#161B22;--ink:#EAF0F6;--ink2:#9DAAB8;--ink3:#5E6B7A;--line:#26303B;--gold:#C9A55F;--serif:"Source Serif 4",Georgia,serif;--sans:"Libre Franklin",system-ui,sans-serif;--mono:"JetBrains Mono",monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.ix{max-width:1080px;margin:0 auto;padding:64px 36px 96px}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+h1{font-family:var(--serif);font-size:52px;font-weight:600;letter-spacing:-.02em;margin:14px 0 0;line-height:1}
+.sub{color:var(--ink2);font-size:16px;margin:16px 0 0;max-width:640px;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:48px}
+.card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s}
+.card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.swatch{height:108px;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid var(--line)}
+.swlabel{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.s1{background:#FBFAF6}.s1 .swlabel{color:#8C2B22}
+.s2{background:#FCFCFC}.s2 .swlabel{color:#E2231A}
+.s3{background:#0B0F14;background-image:radial-gradient(rgba(61,220,132,.10) 1px,transparent 1px);background-size:14px 14px}.s3 .swlabel{color:#3DDC84}
+.s4{background:#F3EDE3}.s4 .swlabel{color:#C2620E}
+.s5{background:#16263D}.s5 .swlabel{color:#C9A55F}
+.cbody{padding:20px 22px 22px}
+.cnum{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.ctitle{font-family:var(--serif);font-size:23px;font-weight:600;margin:6px 0 0}
+.cdesc{color:var(--ink2);font-size:13.5px;line-height:1.55;margin-top:8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tag{font-family:var(--mono);font-size:10px;color:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+.open{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.02em}
+.note{margin-top:44px;border-top:1px solid var(--line);padding-top:20px;color:var(--ink3);font-size:12.5px;font-family:var(--mono);line-height:1.8}
+.note b{color:var(--ink2);font-weight:500}
+@media(max-width:760px){.ix{padding:40px 20px}h1{font-size:38px}.grid{grid-template-columns:1fr}}
+</style>
+</helmet>
+<div class="ix">
+<div class="kick">Swapnil Garge · Portfolio — 5 directions</div>
+<h1>Five ways to tell the same story.</h1>
+<p class="sub">One dataset, five distinct treatments — each presenting the same experience, metrics and skills with a different voice. Every design reads from the shared <span style="font-family:var(--mono);color:var(--gold)">data.js</span>. Click any card to open it.</p>
+<div class="grid">
+<a class="card" href="01%20Editorial.dc.html"><div class="swatch s1"><span class="swlabel">Newsreader · Oxblood</span></div><div class="cbody"><div class="cnum">01</div><div class="ctitle">Editorial</div><div class="cdesc">A magazine cover treatment — large serif masthead, a drop-cap lede, and ruled sections. Restrained ink-on-ivory with a single oxblood accent.</div><div class="tags"><span class="tag">serif display</span><span class="tag">ivory</span><span class="tag">print-feel</span></div><div class="open">Open design →</div></div></a>
+<a class="card" href="02%20Swiss%20Minimal.dc.html"><div class="swatch s2"><span class="swlabel">Archivo · Swiss Red</span></div><div class="cbody"><div class="cnum">02</div><div class="ctitle">Swiss Minimal</div><div class="cdesc">International Typographic Style — a strict label/content grid, heavy Archivo headlines, and a disciplined monochrome palette punctuated by one red.</div><div class="tags"><span class="tag">grid system</span><span class="tag">monochrome</span><span class="tag">bar charts</span></div><div class="open">Open design →</div></div></a>
+<a class="card" href="03%20Terminal.dc.html"><div class="swatch s3"><span class="swlabel">JetBrains Mono · Console</span></div><div class="cbody"><div class="cnum">03</div><div class="ctitle">Terminal</div><div class="cdesc">A developer dashboard — a window-chrome profile, KPI tiles, the career rendered as a <span style="font-family:var(--mono)">git log</span>, and skills as block meters. Dark and data-dense.</div><div class="tags"><span class="tag">dark mode</span><span class="tag">monospace</span><span class="tag">data-dense</span></div><div class="open">Open design →</div></div></a>
+<a class="card" href="04%20Warm%20Refined.dc.html"><div class="swatch s4"><span class="swlabel">Spectral · Burnt Orange</span></div><div class="cbody"><div class="cnum">04</div><div class="ctitle">Warm Refined</div><div class="cdesc">An elevated take on the original cream-and-orange brand — soft cards, a featured photo, metric badges, and Spectral serif warmth throughout.</div><div class="tags"><span class="tag">warm cream</span><span class="tag">soft cards</span><span class="tag">on-brand</span></div><div class="open">Open design →</div></div></a>
+<a class="card" href="05%20Executive.dc.html"><div class="swatch s5"><span class="swlabel">Source Serif · Navy &amp; Gold</span></div><div class="cbody"><div class="cnum">05</div><div class="ctitle">Executive</div><div class="cdesc">A boardroom résumé — a navy banner with a circular portrait, a two-column body, gold metric callouts, and a structured sidebar of skills and credentials.</div><div class="tags"><span class="tag">navy / gold</span><span class="tag">sidebar</span><span class="tag">premium</span></div><div class="open">Open design →</div></div></a>
+</div>
+<div class="note"><b>// Notes</b><br>· All five share the same <b>data.js</b> — edit it once and every design updates.<br>· The career timeline reveals once on load (no infinite loop), then stays static.</div>
+</div>
+</x-dc>
+</body>
+</html>
